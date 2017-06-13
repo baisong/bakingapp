@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+@TODO Document me
+-->
+<LinearLayout
+    android:id="@+id/ll_recipe_card"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/recipe_card_paddingBottom"
+    android:paddingTop="@dimen/recipe_card_paddingTop"
+    >
+    <!--
+@TODO Document me
+-->
+    <TextView
+        android:id="@+id/tv_recipe_name"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/recipe_card_paddingTop"
+        android:layout_marginBottom="@dimen/recipe_card_paddingBottom"
+        android:textAppearance="?android:attr/textAppearanceSmall" >
+    </TextView>
+</LinearLayout>

@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="recipe_card_paddingBottom">24dp</dimen>
+    <dimen name="recipe_card_paddingTop">24dp</dimen>
+    <dimen name="main_list_listview_padding">0dp</dimen>
+</resources>
