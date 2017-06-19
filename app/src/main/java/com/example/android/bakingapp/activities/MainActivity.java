@@ -14,13 +14,13 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
 
     private boolean mTwoPane;
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (findViewById(R.id.android_me_linear_layout) != null) {
             mTwoPane = true;
-
             if (savedInstanceState == null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
                 RecipeFragment headFragment = new RecipeFragment();
@@ -32,7 +32,6 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
         } else {
             mTwoPane = false;
         }
-
     }
 
     public void onCardSelected(int position) {
