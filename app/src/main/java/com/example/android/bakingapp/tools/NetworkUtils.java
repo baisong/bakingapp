@@ -1,7 +1,6 @@
 package com.example.android.bakingapp.tools;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -22,77 +21,59 @@ import java.util.Scanner;
  */
 public final class NetworkUtils {
 
-    public static final int MODE_SORT_POPULAR = 0;
-    public static final int MODE_SORT_TOP_RATED = 1;
-    public static final int MODE_LIST_FAVORITES = 2;
-
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
+    private static final String DATA_URL = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
 
-    public static final String MOVIE_ID = "id";
-    public static final String MOVIE_TITLE = "original_title";
-    public static final String MOVIE_POSTER = "poster_path";
-    public static final String MOVIE_VOTE_AVG = "vote_average";
-    public static final String MOVIE_SYNOPSIS = "overview";
-    public static final String MOVIE_RELEASE_DATE = "release_date";
+    private static final String RECIPE_ID = "id";
+    private static final String RECIPE_NAME = "name";
+    private static final String RECIPE_INGREDIENTS_ARRAY = "ingredients";
+    private static final String RECIPE_STEPS_ARRAY = "steps";
+    private static final String RECIPE_SERVING_COUNT = "servings";
+    private static final String RECIPE_IMAGE_URL = "image";
 
-    public static final String REVIEW_ID = "id";
-    public static final String REVIEW_AUTHOR = "author";
-    public static final String REVIEW_TEXT = "content";
+    private static final String[] RECIPE_CONTENT_FIELDS = new String[]{
+            RECIPE_ID,
+            RECIPE_NAME,
+            RECIPE_SERVING_COUNT,
+            RECIPE_IMAGE_URL,
+    };
 
-    public static final String TRAILER_YOUTUBE_NAME = "name";
-    public static final String TRAILER_YOUTUBE_SIZE = "size";
-    public static final String TRAILER_YOUTUBE_SOURCE = "source";
-    public static final String TRAILER_YOUTUBE_TYPE = "type";
-    public static final String FORMATTED_TRAILER_TITLE = "trailer_title";
-    public static final String FORMATTED_TRAILER_SOURCE = "trailer_source";
+    // "Ingredient" and "Step" records reference their recipe id.
+    private static final String RECIPE_REFERENCE_ID = "recipe_id";
 
-    private static final int API_VERSION = 3;
-    private static final String LANG_PARAM = "language";
-    private static final String DEFAULT_LANG = "en-US";
-    private static final String API_KEY_PARAM = "api_key";
-    private static final String TMDB_RESULTS = "results";
-    private static final String TMDB_STATUS_CODE = "status_code";
+    private static final String INGREDIENT_NAME = "ingredient";
+    private static final String INGREDIENT_QUANTITY = "quantity";
+    private static final String INGREDIENT_MEASURE = "measure";
+    private static final String[] INGREDIENT_CONTENT_FIELDS = new String[]{
+            INGREDIENT_NAME,
+            INGREDIENT_QUANTITY,
+            INGREDIENT_MEASURE,
+    };
 
-    private static final String API_BASE_URL = "https://api.themoviedb.org";
-    private static final String API_POPULAR_PATH = "/movie/popular";
-    private static final String API_TOP_RATED_PATH = "/movie/top_rated";
-    private static final String API_MOVIE_DETAILS_PATH = "/movie/";
-    private static final String API_MOVIE_REVIEWS_PATH = "/reviews";
-    private static final String API_MOVIE_TRAILERS_PATH = "/trailers";
-    private static final String URL_SEPARATOR = "/";
-
-    private static final String YOUTUBE_BASE_URL = "http://www.youtube.com/watch?v=";
-    private static final String IMAGE_BASE_URL = "http://image.tmdb.org/t/p/w185/";
-    private static final String EMPTY_PATH_SEGMENT = "";
-    private static final String REVIEWS_RESULTS_ARRAY_NAME = "results";
-    private static final String TRAILERS_RESULTS_ARRAY_NAME = "youtube";
-    private static final String TRAILER_TITLE_FORMAT = "%s: %s (%s)";
-    private static final java.lang.String LIST_FAVORITES_SORT_ORDER = " DESC";
+    private static final String STEP_LABEL = "shortDescription";
+    private static final String STEP_BODY = "description";
+    private static final String STEP_VIDEO_URL = "videoURL";
+    private static final String STEP_IMAGE_URL = "thumbnailURL";
+    private static final String[] STEP_CONTENT_FIELDS = new String[]{
+            STEP_LABEL,
+            STEP_BODY,
+            STEP_VIDEO_URL,
+            STEP_IMAGE_URL,
+    };
 
     /**
-     * Builds the URL for querying movies using the specified sort method.
+     * @TODO Document me
+     * @return
      */
-    public static URL buildUrl(int sortMethod) {
-        // Default to popular, even if we have an invalid sortMethod
-        // After all, the app is named "Popular Movies"
-        String path = API_POPULAR_PATH;
-        if (sortMethod == MODE_SORT_TOP_RATED) {
-            path = API_TOP_RATED_PATH;
-        }
-        String baseUrl = API_BASE_URL
-                + URL_SEPARATOR
-                + String.valueOf(API_VERSION)
-                + path;
-        String tmdbApiKey = "";
-        Uri builtUri = Uri.parse(baseUrl).buildUpon()
-                .appendQueryParameter(API_KEY_PARAM, tmdbApiKey)
-                .appendQueryParameter(LANG_PARAM, DEFAULT_LANG)
-                .build();
+    public static URL buildUrl() {
+        Uri builtUri = Uri.parse(DATA_URL).buildUpon().build();
         return getUrl(builtUri);
     }
 
     /**
-     * Converts a Uri to a URL object, encapsulates exception handling.
+     * @TODO Document me
+     * @param uri
+     * @return
      */
     private static URL getUrl(Uri uri) {
         URL url = null;
@@ -105,18 +86,18 @@ public final class NetworkUtils {
     }
 
     /**
-     * Fetches an HTTP response from a URL.
+     * @TODO Document me
+     * @param url
+     * @return
+     * @throws IOException
      */
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try {
             InputStream in = urlConnection.getInputStream();
-
             Scanner scanner = new Scanner(in);
             scanner.useDelimiter("\\A");
-
-            boolean hasInput = scanner.hasNext();
-            if (hasInput) {
+            if (scanner.hasNext()) {
                 return scanner.next();
             } else {
                 return null;
@@ -127,74 +108,18 @@ public final class NetworkUtils {
     }
 
     /**
-     * Returns an "MovieShelf": an array of poster URL strings & the detail launch Intent extra.
+     * @TODO Document me
+     * @param json
+     * @param keys
+     * @return
      */
-    public static JSONArray getMovieTitlesFromJson(String jsonResponse) throws JSONException {
-        JSONObject responseObj = new JSONObject(jsonResponse);
-        if (responseObj.has(TMDB_STATUS_CODE)
-                && (responseObj.getInt(TMDB_STATUS_CODE) != HttpURLConnection.HTTP_OK)) {
-            return null;
-        }
-        return responseObj.getJSONArray(TMDB_RESULTS);
-    }
-
-    /**
-     * Builds the URL to fetch a given movie's reviews.
-     */
-    public static URL buildReviewsUrl(int movieId) {
-        return getUrl(buildDetailsUri(movieId, API_MOVIE_REVIEWS_PATH));
-    }
-
-    /**
-     * Builds the URL to fetch a given movie's trailers.
-     */
-    public static URL buildTrailersUrl(int movieId) {
-        return getUrl(buildDetailsUri(movieId, API_MOVIE_TRAILERS_PATH));
-    }
-
-    /**
-     * Builds the URL to fetch a given movie.
-     *
-     * Currently used in the DetailActivity to refresh favorites after they are launched from the
-     * favorites view, since the JSON string used to launch favorites is stored in the database,
-     * and could be stale.
-     */
-    public static URL buildMovieUrl(int movieId) {
-        return getUrl(buildDetailsUri(movieId, EMPTY_PATH_SEGMENT));
-    }
-
-    /**
-     * Wrapper function for all movie data Uri builders.
-     */
-    private static Uri buildDetailsUri(int movieId, String detailsPath) {
-        String tmdbApiKey = "";
-        String baseUrl = API_BASE_URL
-                + URL_SEPARATOR
-                + String.valueOf(API_VERSION)
-                + API_MOVIE_DETAILS_PATH
-                + String.valueOf(movieId)
-                + detailsPath;
-        return Uri.parse(baseUrl).buildUpon()
-                .appendQueryParameter(API_KEY_PARAM, tmdbApiKey)
-                .appendQueryParameter(LANG_PARAM, DEFAULT_LANG)
-                .build();
-    }
-
-    /**
-     * Convert an individual movie JSON string into ContentValues for the provider.
-     */
-    @Nullable
-    public static ContentValues getMovieItemData(String jsonString) {
+    private static ContentValues prepareFromJson(JSONObject json, String[] keys) {
         ContentValues item;
         try {
-            JSONObject json = new JSONObject(jsonString);
             item = new ContentValues();
-            item.put(NetworkUtils.MOVIE_ID, json.getInt(NetworkUtils.MOVIE_ID));
-            item.put(NetworkUtils.MOVIE_TITLE, json.getString(NetworkUtils.MOVIE_TITLE));
-            item.put(NetworkUtils.MOVIE_RELEASE_DATE, json.getString(NetworkUtils.MOVIE_RELEASE_DATE));
-            item.put(NetworkUtils.MOVIE_POSTER, IMAGE_BASE_URL + json.getString(NetworkUtils.MOVIE_POSTER));
-            item.put(NetworkUtils.MOVIE_VOTE_AVG, json.getString(NetworkUtils.MOVIE_VOTE_AVG));
-            item.put(NetworkUtils.MOVIE_SYNOPSIS, json.getString(NetworkUtils.MOVIE_SYNOPSIS));
+            for (String key : keys) {
+                item.put(key, json.getString(key));
+            }
             return item;
         }
         catch (JSONException e) {
@@ -204,92 +129,39 @@ public final class NetworkUtils {
     }
 
     /**
-     * Parses a reviews URL response into an array of content values.
+     * @TODO Document me
+     * @param json
+     * @param keys
+     * @param extraKey
+     * @param extraValue
+     * @return
      */
-    public static ContentValues[] getReviewsData(String jsonString) {
-        ContentValues[] items;
-        JSONArray results;
-        try {
-            JSONObject json = new JSONObject(jsonString);
-            results = json.getJSONArray(REVIEWS_RESULTS_ARRAY_NAME);
-            items = new ContentValues[results.length()];
-            if (results.length() > 0) {
-                for (int i = 0; i < results.length(); i++) {
-                    items[i] = getReviewItemData(results.getJSONObject(i));
-                }
-            }
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return items;
-    }
-
-    /**
-     * Parses an individual review item into a ContentValues instance.
-     */
-    private static ContentValues getReviewItemData(JSONObject json) {
+    private static ContentValues prepareFromJson(JSONObject json, String[] keys, String extraKey, int extraValue) {
         ContentValues item;
-        try {
-            item = new ContentValues();
-            item.put(NetworkUtils.REVIEW_ID, json.getString(NetworkUtils.REVIEW_ID));
-            item.put(NetworkUtils.REVIEW_AUTHOR, json.getString(NetworkUtils.REVIEW_AUTHOR));
-            item.put(NetworkUtils.REVIEW_TEXT, json.getString(NetworkUtils.REVIEW_TEXT));
-            return item;
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Parses a trailers URL response into an array of content values.
-     */
-    public static ContentValues[] getTrailersData(String jsonString) {
-        ContentValues[] items;
-        JSONArray results;
-        try {
-            JSONObject json = new JSONObject(jsonString);
-            results = json.getJSONArray(TRAILERS_RESULTS_ARRAY_NAME);
-            items = new ContentValues[results.length()];
-            if (results.length() > 0) {
-                for (int i = 0; i < results.length(); i++) {
-                    items[i] = getTrailerItemData(results.getJSONObject(i));
-                }
-            }
-        }
-        catch (JSONException e) {
-            e.printStackTrace();
-            return null;
-        }
-
-        return items;
-    }
-
-    /**
-     * Parses an individual trailer item into a ContentValues instance.
-     */
-    private static ContentValues getTrailerItemData(JSONObject json) {
-        ContentValues item;
-        item = new ContentValues();
-        item.put(NetworkUtils.FORMATTED_TRAILER_TITLE, formatTrailerTitle(json));
-        item.put(NetworkUtils.FORMATTED_TRAILER_SOURCE, formatTrailerContentUri(json));
+        item = prepareFromJson(json, keys);
+        item.put(extraKey, extraValue);
         return item;
-
     }
 
     /**
-     * Standardizes a pretty trailer title for display.
+     * @TODO Document me
+     * @param recipes
+     * @return
      */
-    private static String formatTrailerTitle(JSONObject json) {
+    public static ContentValues[] getRecipes(JSONArray recipes) {
+        return getItems(recipes, RECIPE_CONTENT_FIELDS);
+    }
+
+    /**
+     * @TODO Document me
+     * @param recipe
+     * @return
+     */
+    public static ContentValues[] getSteps(JSONObject recipe) {
         try {
-            String name = json.getString(TRAILER_YOUTUBE_NAME);
-            String size = json.getString(TRAILER_YOUTUBE_SIZE);
-            String type = json.getString(TRAILER_YOUTUBE_TYPE);
-            return String.format(TRAILER_TITLE_FORMAT, type, name, size);
+            int recipeId = recipe.getInt(RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(RECIPE_STEPS_ARRAY);
+            return getItems(ingredients, STEP_CONTENT_FIELDS, RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -298,12 +170,15 @@ public final class NetworkUtils {
     }
 
     /**
-     * Creates an intent-ready content URI to launch a YouTube trailer
+     * @TODO Document me
+     * @param recipe
+     * @return
      */
-    private static String formatTrailerContentUri(JSONObject json) {
+    public static ContentValues[] getIngredients(JSONObject recipe) {
         try {
-            String source = json.getString(TRAILER_YOUTUBE_SOURCE);
-            return YOUTUBE_BASE_URL + source;
+            int recipeId = recipe.getInt(RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(RECIPE_INGREDIENTS_ARRAY);
+            return getItems(ingredients, INGREDIENT_CONTENT_FIELDS, RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -312,23 +187,78 @@ public final class NetworkUtils {
     }
 
     /**
-     * Queries the RecipeProvider and creates a MovieShelf for display in MainActivity.
+     * @TODO Document me
+     * @param jsonArray
+     * @param fields
+     * @return
      */
-    @Nullable
-    public static JSONArray buildFavoritesShelf(Context context) {
-        return new JSONArray();
+    public static ContentValues[] getItems(JSONArray jsonArray, String[] fields) {
+        return getItems(jsonArray, fields, "", 0);
     }
 
     /**
-     * Queries themoviedb.com API for the movies list of the specified sort.
+     * @TODO Document me
+     * @param jsonArray
+     * @param fields
+     * @param extraKey
+     * @param extraValue
+     * @return
+     */
+    public static ContentValues[] getItems(JSONArray jsonArray, String[] fields, String extraKey, int extraValue) {
+        ContentValues[] items;
+        try {
+            int length = jsonArray.length();
+            items = new ContentValues[length];
+            if (length > 0) {
+                for (int i = 0; i < length; i++) {
+                    if (extraKey.length() > 0 && extraValue > 0) {
+                        items[i] = prepareFromJson(jsonArray.getJSONObject(i), fields, extraKey, extraValue);
+                    }
+                    else {
+                        items[i] = prepareFromJson(jsonArray.getJSONObject(i), fields);
+                    }
+                }
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return items;
+    }
+
+    public static ContentValues[] concat(ContentValues[] a, ContentValues[] b) {
+        int aLen = a.length;
+        int bLen = b.length;
+        ContentValues[] c= new ContentValues[aLen+bLen];
+        System.arraycopy(a, 0, c, 0, aLen);
+        System.arraycopy(b, 0, c, aLen, bLen);
+        return c;
+    }
+
+    /**
+     * @TODO Document me
+     * @return
      */
     @Nullable
-    public static JSONArray buildSortedShelf(int viewMode) {
-        URL movieQueryUrl = buildUrl(viewMode);
+    public static RecipeRecordCollection fetch() {
+        RecipeRecordCollection collection = new RecipeRecordCollection();
+        URL movieQueryUrl = buildUrl();
         Log.d(LOG_TAG, movieQueryUrl.toString());
         try {
-            String json = getResponseFromHttpUrl(movieQueryUrl);
-            return getMovieTitlesFromJson(json);
+            String jsonString = getResponseFromHttpUrl(movieQueryUrl);
+            Log.d(LOG_TAG, jsonString);
+            JSONArray recipes = new JSONArray(jsonString);
+            collection.recipes = getRecipes(recipes);
+            collection.ingredients = new ContentValues[]{};
+            collection.steps = new ContentValues[]{};
+            for (int i = 0; i < recipes.length(); i++) {
+                JSONObject recipe = recipes.getJSONObject(i);
+                collection.ingredients = concat(collection.ingredients, getIngredients(recipe));
+                collection.steps = concat(collection.steps, getSteps(recipe));
+            }
+            return collection;
         } catch (Exception e) {
             e.printStackTrace();
             return null;

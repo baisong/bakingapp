@@ -1,6 +1,7 @@
 package com.example.android.bakingapp.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +14,9 @@ import com.example.android.bakingapp.R;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class RecipeFragment extends Fragment {
 
     public static final String RECIPE_NAME_LIST = "recipeNames";
@@ -21,6 +25,7 @@ public class RecipeFragment extends Fragment {
 
     private List<String> mRecipeNames;
     private int mListIndex;
+    @BindView(R.id.tv_recipe_name) TextView mRecipeName;
 
     public RecipeFragment() {
     }
@@ -34,10 +39,18 @@ public class RecipeFragment extends Fragment {
         }
 
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
-        final TextView textView = (TextView) rootView.findViewById(R.id.tv_recipe_name);
+        ButterKnife.bind(this, rootView);
+        // @TODO Get butterknife working so we don't have to do the following:
+        mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
+        return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
         if (mRecipeNames != null) {
-            textView.setText(mRecipeNames.get(mListIndex));
-            textView.setOnClickListener(new View.OnClickListener() {
+            mRecipeName.setText(mRecipeNames.get(mListIndex));
+            mRecipeName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     if (mListIndex < mRecipeNames.size() - 1) {
@@ -45,15 +58,13 @@ public class RecipeFragment extends Fragment {
                     } else {
                         mListIndex = 0;
                     }
-                    textView.setText(mRecipeNames.get(mListIndex));
+                    mRecipeName.setText(mRecipeNames.get(mListIndex));
                 }
             });
 
         } else {
             Log.v(TAG, "This fragment has a null list of recipe names");
         }
-
-        return rootView;
     }
 
     public void setRecipeNames(List<String> recipeNames) {

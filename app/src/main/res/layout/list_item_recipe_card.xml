@@ -5,20 +5,40 @@
 <LinearLayout
     android:id="@+id/ll_recipe_card"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/recipe_card_paddingBottom"
     android:paddingTop="@dimen/recipe_card_paddingTop"
     >
-    <!--
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+<!--
 @TODO Document me
 -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        android:src="@drawable/ic_photo_size_select_actual_black_24dp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitXY"
+        android:id="@+id/iv_recipe_pic"/>
     <TextView
         android:id="@+id/tv_recipe_name"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/recipe_card_paddingTop"
-        android:layout_marginBottom="@dimen/recipe_card_paddingBottom"
-        android:textAppearance="?android:attr/textAppearanceSmall" >
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        tools:text="Example Recipe"
+        android:textAppearance="?android:attr/textAppearanceSmall">
     </TextView>
+    </android.support.constraint.ConstraintLayout>
 </LinearLayout>

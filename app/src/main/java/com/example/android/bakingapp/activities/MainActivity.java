@@ -3,35 +3,182 @@ package com.example.android.bakingapp.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.RecipeData;
 import com.example.android.bakingapp.fragments.MainListFragment;
 import com.example.android.bakingapp.fragments.RecipeFragment;
+import com.example.android.bakingapp.tools.DatabaseHandler;
+import com.example.android.bakingapp.tools.NetworkUtils;
+import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
-public class MainActivity extends AppCompatActivity implements MainListFragment.OnCardClickListener {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class MainActivity extends AppCompatActivity implements MainListFragment.OnCardClickListener,
+        LoaderCallbacks<RecipeRecordCollection> {
 
     private boolean mTwoPane;
+    private RecipeFragment mRecipeFragment;
+
+    @BindView(R.id.pb_loading_data) ProgressBar mLoadingIndicator;
+    //@BindView(R.id.tv_test) TextView mTest;
+
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
+    private static final int RECIPE_LOADER_ID = 45466;
+    //private static final Uri RECIPES_URI = new Uri.Builder().scheme().authority().appendEncodedPath().build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        ButterKnife.bind(this);
+        mRecipeFragment = new RecipeFragment();
+        //mTest.setText("Hello world!");
         if (findViewById(R.id.android_me_linear_layout) != null) {
             mTwoPane = true;
             if (savedInstanceState == null) {
                 FragmentManager fragmentManager = getSupportFragmentManager();
-                RecipeFragment headFragment = new RecipeFragment();
-                headFragment.setRecipeNames(RecipeData.getTestData());
+
+                mRecipeFragment.setRecipeNames(RecipeData.getTestData());
                 fragmentManager.beginTransaction()
-                        .add(R.id.recipe_container, headFragment)
+                        .add(R.id.recipe_container, mRecipeFragment)
                         .commit();
             }
         } else {
             mTwoPane = false;
         }
+
+        getSupportLoaderManager().initLoader(RECIPE_LOADER_ID, null, MainActivity.this);
+    }
+
+    /**
+     * Instantiate and return a new Loader for the given ID.
+     *
+     * @param id The ID whose loader is to be created.
+     * @param loaderArgs Any arguments supplied by the caller.
+     *
+     * @return Return a new Loader instance that is ready to start loading.
+     */
+    @Override
+    public Loader<RecipeRecordCollection> onCreateLoader(int id, final Bundle loaderArgs) {
+
+        return new AsyncTaskLoader<RecipeRecordCollection>(this) {
+
+            /* This String array will hold and help cache our weather data */
+            RecipeRecordCollection mData = null;
+
+            // COMPLETED (3) Cache the weather data in a member variable and deliver it in onStartLoading.
+            /**
+             * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
+             */
+            @Override
+            protected void onStartLoading() {
+                if (mData != null) {
+                    deliverResult(mData);
+                } else {
+                    //mLoadingIndicator.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
+            }
+
+            /**
+             * This is the method of the AsyncTaskLoader that will load and parse the JSON data
+             * from OpenWeatherMap in the background.
+             *
+             * @return Weather data from OpenWeatherMap as an array of Strings.
+             *         null if an error occurs
+             */
+            @Override
+            public RecipeRecordCollection loadInBackground() {
+                try {
+                    RecipeRecordCollection collection = NetworkUtils.fetch();
+                    return collection;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            /**
+             * Sends the result of the load to the registered listener.
+             *
+             * @param data The result of the load
+             */
+            public void deliverResult(RecipeRecordCollection data) {
+                mData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    // COMPLETED (4) When the load is finished, show either the data or an error message if there is no data
+    /**
+     * Called when a previously created loader has finished its load.
+     *
+     * @param loader The Loader that has finished.
+     * @param data The data generated by the Loader.
+     */
+    @Override
+    public void onLoadFinished(Loader<RecipeRecordCollection> loader, RecipeRecordCollection data) {
+        if (data != null) {
+            showRecipeData(data);
+        }
+        else {
+            showErrorMessage();
+        }
+        //mLoadingIndicator.setVisibility(View.INVISIBLE);
+        /*
+        mForecastAdapter.setWeatherData(data);
+        if (null == data) {
+            showErrorMessage();
+        } else {
+            showWeatherDataView();
+        }
+        */
+    }
+
+    public void showRecipeData(RecipeRecordCollection data) {
+        mRecipeFragment.setRecipeNames(data.getRecipeNames());
+    }
+
+    public void showErrorMessage() {
+        Toast t = Toast.makeText(this, "Error", Toast.LENGTH_LONG);
+        t.show();
+    }
+
+    /**
+     * Called when a previously created loader is being reset, and thus
+     * making its data unavailable.  The application should at this point
+     * remove any references it has to the Loader's data.
+     *
+     * @param loader The Loader that is being reset.
+     */
+    @Override
+    public void onLoaderReset(Loader<RecipeRecordCollection> loader) {
+        /*
+         * We aren't using this method in our example application, but we are required to Override
+         * it to implement the LoaderCallbacks<String> interface
+         */
+    }
+
+    /**
+     * This method is used when we are resetting data, so that at one point in time during a
+     * refresh of our data, you can see that there is no data showing.
+     */
+    private void invalidateData() {
+        //mForecastAdapter.setWeatherData(null);
+    }
+
+    private void initData() {
+        final DatabaseHandler handler = new DatabaseHandler(getContentResolver());
+        //handler.startBulkInsert(1, null, RECIPES_URI, mData.recipes);
     }
 
     public void onCardSelected(int position) {
