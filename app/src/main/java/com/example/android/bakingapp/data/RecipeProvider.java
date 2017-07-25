@@ -1,6 +1,13 @@
 package com.example.android.bakingapp.data;
 
-/*
+
+import android.net.Uri;
+
+import net.simonvt.schematic.annotation.ContentProvider;
+import net.simonvt.schematic.annotation.ContentUri;
+import net.simonvt.schematic.annotation.InexactContentUri;
+import net.simonvt.schematic.annotation.TableEndpoint;
+
 @ContentProvider(authority = RecipeProvider.AUTHORITY,
         name = RecipeProvider.NAME,
         database = RecipeDatabase.class,
@@ -9,7 +16,6 @@ public final class RecipeProvider {
 
     public static final String NAME = "BakingAppProvider";
     public static final String PACKAGE = "com.example.android.bakingapp.provider";
-
     public static final String AUTHORITY = "com.example.android.bakingapp.data.RecipeProvider";
 
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
@@ -33,7 +39,8 @@ public final class RecipeProvider {
         return builder.build();
     }
 
-    @TableEndpoint(table = RecipeDatabase.RECIPES) public static class Recipes {
+    @TableEndpoint(table = RecipeDatabase.RECIPES)
+    public static class Recipes {
 
         @ContentUri(
                 path = Path.RECIPES,
@@ -52,7 +59,8 @@ public final class RecipeProvider {
         }
     }
 
-    @TableEndpoint(table = Tables.INGREDIENTS) public static class Ingredients {
+    @TableEndpoint(table = RecipeDatabase.Tables.INGREDIENTS)
+    public static class Ingredients {
 
         @InexactContentUri(
                 name = "INGREDIENTS_FOR_RECIPE",
@@ -67,7 +75,7 @@ public final class RecipeProvider {
 
     }
 
-    @TableEndpoint(table = Tables.STEPS)
+    @TableEndpoint(table = RecipeDatabase.Tables.STEPS)
     public static class Steps {
         @InexactContentUri(
                 name = "STEPS_FOR_RECIPE",
@@ -80,4 +88,4 @@ public final class RecipeProvider {
             return buildUri(Path.RECIPES, String.valueOf(recipeId), Path.STEPS);
         }
     }
-}*/
+}
