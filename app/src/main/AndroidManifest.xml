@@ -21,7 +21,7 @@
 
         <provider
             android:authorities="com.example.android.bakingapp"
-            android:name="com.example.android.bakingapp.provider.SchematicContentProvider"
+            android:name="com.example.android.bakingapp.schematic.RecipeProvider"
             android:exported="false"></provider>
     </application>
 

@@ -36,6 +36,12 @@ dependencies {
     compile 'com.github.madrapps:asyncquery:1.0.0'
 }
 
+apt {
+    arguments {
+        schematicOutPackage "com.example.android.bakingapp.schematic.RecipeProvider"
+    }
+}
+
 /*
 
 dependencies {

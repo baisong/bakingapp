@@ -1,6 +1,5 @@
 package com.example.android.bakingapp.data;
 
-
 import android.net.Uri;
 
 import net.simonvt.schematic.annotation.ContentProvider;
@@ -11,12 +10,13 @@ import net.simonvt.schematic.annotation.TableEndpoint;
 @ContentProvider(authority = RecipeProvider.AUTHORITY,
         name = RecipeProvider.NAME,
         database = RecipeDatabase.class,
-        packageName = RecipeProvider.PACKAGE)
+        packageName = RecipeProvider.PACKAGE
+)
 public final class RecipeProvider {
 
-    public static final String NAME = "BakingAppProvider";
-    public static final String PACKAGE = "com.example.android.bakingapp.provider";
-    public static final String AUTHORITY = "com.example.android.bakingapp.data.RecipeProvider";
+    public static final String NAME = "RecipeProvider";
+    public static final String PACKAGE = "com.example.android.bakingapp.schematic";
+    public static final String AUTHORITY = "com.example.android.bakingapp";
 
     static final Uri BASE_CONTENT_URI = Uri.parse("content://" + AUTHORITY);
 
