@@ -1,5 +1,6 @@
 package com.example.android.bakingapp.fragments;
 
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -24,8 +25,11 @@ public class DetailFragment extends Fragment {
     private static final String TAG = "DetailFragment";
 
     private List<String> mRecipeNames;
+    private List<ContentValues[]> mIngredients;
     private int mListIndex;
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
+    @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
+    @BindView(R.id.tv_steps_label) TextView mStepsLabel;
 
     public DetailFragment() {
     }
@@ -41,7 +45,9 @@ public class DetailFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, rootView);
         // @TODO Get butterknife working so we don't have to do the following:
-        mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
+        //mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
+        mIngredientsLabel.setText(R.string.ingredients_label);
+        mStepsLabel.setText(R.string.steps_label);
         return rootView;
     }
 

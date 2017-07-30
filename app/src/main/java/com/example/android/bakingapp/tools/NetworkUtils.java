@@ -250,13 +250,11 @@ public final class NetworkUtils {
             String jsonString = getResponseFromHttpUrl(movieQueryUrl);
             Log.d(LOG_TAG, jsonString);
             JSONArray recipes = new JSONArray(jsonString);
-            collection.recipes = getRecipes(recipes);
-            collection.ingredients = new ContentValues[]{};
-            collection.steps = new ContentValues[]{};
+            collection.setRecipes(getRecipes(recipes));
             for (int i = 0; i < recipes.length(); i++) {
                 JSONObject recipe = recipes.getJSONObject(i);
-                collection.ingredients = concat(collection.ingredients, getIngredients(recipe));
-                collection.steps = concat(collection.steps, getSteps(recipe));
+                collection.setRecipeIngredients(i, getIngredients(recipe));
+                collection.setRecipeSteps(i, getSteps(recipe));
             }
             Log.d(LOG_TAG, collection.getInfoString());
             return collection;

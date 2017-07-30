@@ -4,6 +4,8 @@
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingBottom="@dimen/recipe_card_paddingBottom"
@@ -15,7 +17,34 @@
     <TextView
         android:id="@+id/tv_recipe_name"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
+        tools:text="Recipe Name"
         android:textAppearance="?android:attr/textAppearanceLarge" >
     </TextView>
+
+    <TextView
+        android:id="@+id/tv_ingredients_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/detail_list_margin_top"
+        android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
+        tools:text="Ingredients" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_ingredients"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+
+    <TextView
+        android:id="@+id/tv_steps_label"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/detail_list_margin_top"
+        android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
+        tools:text="Steps" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_steps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
 </LinearLayout>

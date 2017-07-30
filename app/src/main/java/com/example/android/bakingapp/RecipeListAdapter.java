@@ -38,7 +38,7 @@ public class RecipeListAdapter extends BaseAdapter {
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.list_item_recipe, null);
+        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.item_recipe, null);
         TextView recipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         recipeName.setText(mRecipeNames.get(position));
         return rootView;

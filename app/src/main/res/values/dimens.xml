@@ -4,4 +4,5 @@
     <dimen name="recipe_card_paddingBottom">8dp</dimen>
     <dimen name="recipe_card_paddingTop">8dp</dimen>
     <dimen name="main_list_listview_padding">0dp</dimen>
+    <dimen name="detail_list_margin_top">16dp</dimen>
 </resources>

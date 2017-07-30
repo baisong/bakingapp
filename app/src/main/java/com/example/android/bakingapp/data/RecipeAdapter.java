@@ -65,7 +65,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.MovieAdapt
     public MovieAdapterViewHolder onCreateViewHolder(ViewGroup group, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(group.getContext());
 
-        return new MovieAdapterViewHolder(inflater.inflate(R.layout.list_item_recipe, group, false));
+        return new MovieAdapterViewHolder(inflater.inflate(R.layout.item_recipe, group, false));
     }
 
     /**
