@@ -10,8 +10,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.RecipeListAdapter;
-import com.example.android.bakingapp.data.Recipes;
+import com.example.android.bakingapp.adapters.RecipeListAdapter;
+import com.example.android.bakingapp.data.DummyData;
 
 import java.util.List;
 
@@ -51,7 +51,7 @@ public class MainListFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
         mListView = (ListView) rootView.findViewById(R.id.main_list_view);
 
-        mRecipeNames = Recipes.getDummyRecipeNames();
+        mRecipeNames = DummyData.getRecipeNames();
         mAdapter = new RecipeListAdapter(getContext(), mRecipeNames);
         mListView.setAdapter(mAdapter);
 

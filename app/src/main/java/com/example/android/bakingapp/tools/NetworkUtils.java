@@ -41,7 +41,7 @@ public final class NetworkUtils {
     // "Ingredient" and "Step" records reference their recipe id.
     private static final String RECIPE_REFERENCE_ID = "recipe_id";
 
-    private static final String INGREDIENT_NAME = "ingredient";
+    public static final String INGREDIENT_NAME = "ingredient";
     private static final String INGREDIENT_QUANTITY = "quantity";
     private static final String INGREDIENT_MEASURE = "measure";
     private static final String[] INGREDIENT_CONTENT_FIELDS = new String[]{
@@ -50,7 +50,7 @@ public final class NetworkUtils {
             INGREDIENT_MEASURE,
     };
 
-    private static final String STEP_LABEL = "shortDescription";
+    public static final String STEP_LABEL = "shortDescription";
     private static final String STEP_BODY = "description";
     private static final String STEP_VIDEO_URL = "videoURL";
     private static final String STEP_IMAGE_URL = "thumbnailURL";
@@ -248,7 +248,7 @@ public final class NetworkUtils {
         Log.d(LOG_TAG, movieQueryUrl.toString());
         try {
             String jsonString = getResponseFromHttpUrl(movieQueryUrl);
-            Log.d(LOG_TAG, jsonString);
+            //Log.d(LOG_TAG, jsonString);
             JSONArray recipes = new JSONArray(jsonString);
             collection.setRecipes(getRecipes(recipes));
             for (int i = 0; i < recipes.length(); i++) {

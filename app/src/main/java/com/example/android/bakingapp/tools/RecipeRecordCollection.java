@@ -2,12 +2,13 @@ package com.example.android.bakingapp.tools;
 
 import android.content.ContentValues;
 
-import com.example.android.bakingapp.data.Recipes;
+import com.example.android.bakingapp.data.DummyData;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RecipeRecordCollection {
+public class RecipeRecordCollection implements Serializable {
     private static ContentValues[] recipes;
     private static ContentValues[][] ingredients;
     private static ContentValues[][] steps;
@@ -69,7 +70,7 @@ public class RecipeRecordCollection {
     public static List<String> getRecipeNames() {
         List<String> recipeNames = new ArrayList<>();
         for (int i = 0; i < recipes.length; i++) {
-            recipeNames.add(recipes[i].getAsString(Recipes.RECIPE_NAME));
+            recipeNames.add(recipes[i].getAsString(DummyData.RECIPE_NAME));
         }
 
         return recipeNames;

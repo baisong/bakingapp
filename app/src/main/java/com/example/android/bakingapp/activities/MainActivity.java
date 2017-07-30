@@ -13,10 +13,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.Recipes;
+import com.example.android.bakingapp.data.DummyData;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainListFragment;
-import com.example.android.bakingapp.tools.DatabaseHandler;
 import com.example.android.bakingapp.tools.NetworkUtils;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
@@ -42,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
     //@BindView(R.id.tv_test) TextView mTest;
 
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
+    public final static String EXTRA_RECIPE_DATA = "recipeData";
     //private static final Uri RECIPES_URI = new Uri.Builder().scheme().authority().appendEncodedPath().build();
 
     @Override
@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        mRecipeNames = Recipes.getDummyRecipeNames();
+        mRecipeNames = DummyData.getRecipeNames();
         notifyListFragment();
 
         if (findViewById(R.id.android_me_linear_layout) != null) {
@@ -125,22 +125,23 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
         //mForecastAdapter.setWeatherData(null);
     }
 
-    private void initData() {
-        final DatabaseHandler handler = new DatabaseHandler(getContentResolver());
-        //handler.startBulkInsert(1, null, RECIPES_URI, mData.recipes);
-    }
-
     public void onCardSelected(int position) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
             newFragment.setRecipeNames(mRecipeNames);
             newFragment.setListIndex(position);
+            newFragment.setRecipeData(mRecipeData);
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_container, newFragment)
                     .commit();
         } else {
             final Intent intent = new Intent(this, RecipeActivity.class);
             intent.putExtra(EXTRA_RECIPE_INDEX, position);
+
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
+            intent.putExtras(bundle);
+
             startActivity(intent);
         }
 

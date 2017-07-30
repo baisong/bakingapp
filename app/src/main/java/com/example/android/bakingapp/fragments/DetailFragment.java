@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +13,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.adapters.IngredientAdapter;
+import com.example.android.bakingapp.adapters.StepAdapter;
+import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,11 +30,16 @@ public class DetailFragment extends Fragment {
     private static final String TAG = "DetailFragment";
 
     private List<String> mRecipeNames;
-    private List<ContentValues[]> mIngredients;
+    private RecipeRecordCollection mRecipeData;
     private int mListIndex;
+    private IngredientAdapter mIngredientAdapter;
+    private StepAdapter mStepAdapter;
+
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
     @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
+    @BindView(R.id.rv_ingredients) RecyclerView mIngredientsList;
     @BindView(R.id.tv_steps_label) TextView mStepsLabel;
+    @BindView(R.id.rv_steps) RecyclerView mStepsList;
 
     public DetailFragment() {
     }
@@ -48,14 +58,33 @@ public class DetailFragment extends Fragment {
         //mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         mIngredientsLabel.setText(R.string.ingredients_label);
         mStepsLabel.setText(R.string.steps_label);
+
+        // Set up ingredients list.
+        mIngredientsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
+        mIngredientAdapter = new IngredientAdapter();
+        mIngredientsList.setAdapter(mIngredientAdapter);
+
+        // Set up steps list.
+        mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
+        mStepAdapter = new StepAdapter();
+        mStepsList.setAdapter(mStepAdapter);
+
         return rootView;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        Log.d("BakingApp", mRecipeData.getInfoString());
         super.onActivityCreated(savedInstanceState);
+
+        ContentValues[] ingredients = mRecipeData.getIngredients(mListIndex);
+        mIngredientAdapter.setIngredientsData(ingredients);
+        Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
+        mStepAdapter.setStepsData(mRecipeData.getSteps(mListIndex));
+
         if (mRecipeNames != null) {
             mRecipeName.setText(mRecipeNames.get(mListIndex));
+            /** Cycles through recipes
             mRecipeName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -67,6 +96,7 @@ public class DetailFragment extends Fragment {
                     mRecipeName.setText(mRecipeNames.get(mListIndex));
                 }
             });
+             **/
 
         } else {
             Log.v(TAG, "This fragment has a null list of recipe names");
@@ -75,6 +105,10 @@ public class DetailFragment extends Fragment {
 
     public void setRecipeNames(List<String> recipeNames) {
         mRecipeNames = recipeNames;
+    }
+
+    public void setRecipeData(RecipeRecordCollection data) {
+        mRecipeData = data;
     }
 
     public void setListIndex(int index) {
