@@ -258,6 +258,7 @@ public final class NetworkUtils {
                 collection.ingredients = concat(collection.ingredients, getIngredients(recipe));
                 collection.steps = concat(collection.steps, getSteps(recipe));
             }
+            Log.d(LOG_TAG, collection.getInfoString());
             return collection;
         } catch (Exception e) {
             e.printStackTrace();

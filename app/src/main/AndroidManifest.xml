@@ -18,11 +18,6 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.RecipeActivity"></activity>
-
-        <provider
-            android:authorities="com.example.android.bakingapp"
-            android:name="com.example.android.bakingapp.schematic.RecipeProvider"
-            android:exported="false"></provider>
     </application>
 
 </manifest>

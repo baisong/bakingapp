@@ -10,13 +10,13 @@ import android.widget.TextView;
 
 import java.util.List;
 
-public class MainListAdapter extends BaseAdapter {
+public class RecipeListAdapter extends BaseAdapter {
 
     private Context mContext;
     private List<String> mRecipeNames;
     private LayoutInflater mInflater;
 
-    public MainListAdapter(Context context, List<String> recipeNames) {
+    public RecipeListAdapter(Context context, List<String> recipeNames) {
         mContext = context;
         mRecipeNames = recipeNames;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -38,7 +38,7 @@ public class MainListAdapter extends BaseAdapter {
     }
 
     public View getView(final int position, View convertView, ViewGroup parent) {
-        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.list_item_recipe_card, null);
+        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.list_item_recipe, null);
         TextView recipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         recipeName.setText(mRecipeNames.get(position));
         return rootView;

@@ -17,17 +17,17 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class RecipeFragment extends Fragment {
+public class DetailFragment extends Fragment {
 
     public static final String RECIPE_NAME_LIST = "recipeNames";
     public static final String CURRENT_RECIPE = "currentRecipe";
-    private static final String TAG = "RecipeFragment";
+    private static final String TAG = "DetailFragment";
 
     private List<String> mRecipeNames;
     private int mListIndex;
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
 
-    public RecipeFragment() {
+    public DetailFragment() {
     }
 
     @Override

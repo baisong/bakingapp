@@ -5,8 +5,8 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.fragments.RecipeFragment;
-import com.example.android.bakingapp.data.RecipeData;
+import com.example.android.bakingapp.fragments.DetailFragment;
+import com.example.android.bakingapp.data.Recipes;
 
 public class RecipeActivity extends AppCompatActivity {
     @Override
@@ -14,8 +14,8 @@ public class RecipeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
         if(savedInstanceState == null) {
-            RecipeFragment fragment = new RecipeFragment();
-            fragment.setRecipeNames(RecipeData.getTestData());
+            DetailFragment fragment = new DetailFragment();
+            fragment.setRecipeNames(Recipes.getDummyRecipeNames());
             int index = getIntent().getIntExtra(MainActivity.EXTRA_RECIPE_INDEX, 0);
             fragment.setListIndex(index);
             FragmentManager fragmentManager = getSupportFragmentManager();

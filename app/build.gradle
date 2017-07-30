@@ -22,10 +22,10 @@ android {
 }
 
 dependencies {
-    annotationProcessor 'net.simonvt.schematic:schematic-compiler:0.7.0'
-    compile 'net.simonvt.schematic:schematic:0.7.0'
     compile 'com.jakewharton:butterknife:8.6.0'
-    annotationProcessor 'com.jakewharton:butterknife-compiler:8.6.0'
+    apt 'com.jakewharton:butterknife-compiler:8.6.0'
+    compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
+    compile 'com.android.support:recyclerview-v7:26.0.0-alpha1'
     testCompile 'junit:junit:4.12'
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -34,12 +34,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:26.0.0-alpha1'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.github.madrapps:asyncquery:1.0.0'
-}
-
-apt {
-    arguments {
-        schematicOutPackage "com.example.android.bakingapp.schematic.RecipeProvider"
-    }
 }
 
 /*
