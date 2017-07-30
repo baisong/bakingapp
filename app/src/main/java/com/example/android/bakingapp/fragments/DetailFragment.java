@@ -62,11 +62,15 @@ public class DetailFragment extends Fragment {
         // Set up ingredients list.
         mIngredientsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
         mIngredientAdapter = new IngredientAdapter();
+        mIngredientsList.setLayoutFrozen(true);
+        mIngredientsList.setNestedScrollingEnabled(false);
         mIngredientsList.setAdapter(mIngredientAdapter);
 
         // Set up steps list.
         mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
         mStepAdapter = new StepAdapter();
+        //mStepsList.setNestedScrollingEnabled(false);
+        mIngredientsList.setLayoutFrozen(true);
         mStepsList.setAdapter(mStepAdapter);
 
         return rootView;

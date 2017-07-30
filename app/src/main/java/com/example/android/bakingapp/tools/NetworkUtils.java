@@ -42,8 +42,8 @@ public final class NetworkUtils {
     private static final String RECIPE_REFERENCE_ID = "recipe_id";
 
     public static final String INGREDIENT_NAME = "ingredient";
-    private static final String INGREDIENT_QUANTITY = "quantity";
-    private static final String INGREDIENT_MEASURE = "measure";
+    public static final String INGREDIENT_QUANTITY = "quantity";
+    public static final String INGREDIENT_MEASURE = "measure";
     private static final String[] INGREDIENT_CONTENT_FIELDS = new String[]{
             INGREDIENT_NAME,
             INGREDIENT_QUANTITY,

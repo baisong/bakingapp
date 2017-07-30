@@ -4,37 +4,66 @@
 -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:paddingBottom="@dimen/recipe_card_paddingBottom"
     android:paddingTop="@dimen/recipe_card_paddingTop"
     >
     <!--
 @TODO Document me
 -->
-    <TextView
-        android:id="@+id/tv_recipe_name"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="Recipe Name"
-        android:textAppearance="?android:attr/textAppearanceLarge" >
-    </TextView>
+        android:layout_height="wrap_content">
+        <ImageView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="0dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:src="@drawable/ic_photo_size_select_actual_black_24dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:id="@+id/iv_recipe_pic" />
+        <TextView
+            android:id="@+id/tv_recipe_name"
+            android:layout_width="368dp"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorPrimaryInverse"
+            tools:text="Recipe Name"
+            app:layout_constraintBottom_toBottomOf="@+id/iv_recipe_pic"
+            android:layout_marginBottom="6dp"
+            app:layout_constraintLeft_toLeftOf="@+id/iv_recipe_pic"
+            android:layout_marginLeft="8dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            tools:layout_editor_absoluteX="8dp">
+        </TextView>
+    </android.support.constraint.ConstraintLayout>
 
     <TextView
         android:id="@+id/tv_ingredients_label"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/detail_list_margin_top"
+        android:layout_marginBottom="@dimen/detail_list_margin_bottom"
         android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
         tools:text="Ingredients" />
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
     <android.support.v7.widget.RecyclerView
         android:id="@+id/rv_ingredients"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
-
+    </FrameLayout>
     <TextView
         android:id="@+id/tv_steps_label"
         android:layout_width="match_parent"

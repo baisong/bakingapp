@@ -31,6 +31,10 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         // @TODO Use butterknife
         @BindView(R.id.tv_ingredient_name)
         TextView mName;
+        @BindView(R.id.tv_quantity)
+        TextView mQuantity;
+        @BindView(R.id.tv_measure)
+        TextView mMeasure;
 
         /**
          * Sets up the item view.
@@ -70,6 +74,8 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     public void onBindViewHolder(IngredientHolder holder, int position) {
         ContentValues itemValues = mItems[position];
         holder.mName.setText(itemValues.getAsString(NetworkUtils.INGREDIENT_NAME));
+        holder.mQuantity.setText(itemValues.getAsString(NetworkUtils.INGREDIENT_QUANTITY));
+        holder.mMeasure.setText(itemValues.getAsString(NetworkUtils.INGREDIENT_MEASURE));
     }
 
     /**
