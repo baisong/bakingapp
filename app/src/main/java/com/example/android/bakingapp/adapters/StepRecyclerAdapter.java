@@ -10,36 +10,31 @@ import android.widget.TextView;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.BakingAppSchema;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.IngredientHolder> {
+public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapter.StepHolder> {
 
     private ContentValues[] mItems;
 
     /**
      * Creates an Adapter.
      */
-    public IngredientAdapter() {
+    public StepRecyclerAdapter() {
         super();
     }
 
     /**
      * Cache of the children views for a item_ingredient view.
      */
-    public class IngredientHolder extends RecyclerView.ViewHolder {
+    public class StepHolder extends RecyclerView.ViewHolder {
         // @TODO Use butterknife
-        @BindView(R.id.tv_ingredient_name)
+        //@BindView(R.id.tv_step_name)
         TextView mName;
-        @BindView(R.id.tv_quantity)
-        TextView mQuantity;
-        @BindView(R.id.tv_measure)
-        TextView mMeasure;
 
         /**
          * Sets up the item view.
          */
-        public IngredientHolder(View view) {
+        public StepHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
             // @TODO Use butterknife
@@ -60,28 +55,26 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
      * Initializes each visible view holder on the screen.
      */
     @Override
-    public IngredientHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public StepHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.item_ingredient, parent, false);
+        View view = inflater.inflate(R.layout.item_step, parent, false);
 
-        return new IngredientHolder(view);
+        return new StepHolder(view);
     }
 
     /**
      * Displays the layout bound to each visible view.
      */
     @Override
-    public void onBindViewHolder(IngredientHolder holder, int position) {
+    public void onBindViewHolder(StepHolder holder, int position) {
         ContentValues itemValues = mItems[position];
-        holder.mName.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_NAME));
-        holder.mQuantity.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_QUANTITY));
-        holder.mMeasure.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_MEASURE));
+        holder.mName.setText(itemValues.getAsString(BakingAppSchema.STEP_TITLE));
     }
 
     /**
      * Refreshes the data held in the adapter.
      */
-    public void setIngredientsData(ContentValues[] items) {
+    public void setStepsData(ContentValues[] items) {
         mItems = items;
         notifyDataSetChanged();
     }

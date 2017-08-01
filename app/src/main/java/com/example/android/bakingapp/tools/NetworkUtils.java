@@ -5,6 +5,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.android.bakingapp.data.BakingAppSchema;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,42 +25,11 @@ public final class NetworkUtils {
 
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
     private static final String DATA_URL = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
-
-    private static final String RECIPE_ID = "id";
-    private static final String RECIPE_NAME = "name";
-    private static final String RECIPE_INGREDIENTS_ARRAY = "ingredients";
-    private static final String RECIPE_STEPS_ARRAY = "steps";
-    private static final String RECIPE_SERVING_COUNT = "servings";
-    private static final String RECIPE_IMAGE_URL = "image";
-
-    private static final String[] RECIPE_CONTENT_FIELDS = new String[]{
-            RECIPE_ID,
-            RECIPE_NAME,
-            RECIPE_SERVING_COUNT,
-            RECIPE_IMAGE_URL,
-    };
-
-    // "Ingredient" and "Step" records reference their recipe id.
-    private static final String RECIPE_REFERENCE_ID = "recipe_id";
-
-    public static final String INGREDIENT_NAME = "ingredient";
-    public static final String INGREDIENT_QUANTITY = "quantity";
-    public static final String INGREDIENT_MEASURE = "measure";
-    private static final String[] INGREDIENT_CONTENT_FIELDS = new String[]{
-            INGREDIENT_NAME,
-            INGREDIENT_QUANTITY,
-            INGREDIENT_MEASURE,
-    };
-
-    public static final String STEP_LABEL = "shortDescription";
-    private static final String STEP_BODY = "description";
-    private static final String STEP_VIDEO_URL = "videoURL";
-    private static final String STEP_IMAGE_URL = "thumbnailURL";
-    private static final String[] STEP_CONTENT_FIELDS = new String[]{
-            STEP_LABEL,
-            STEP_BODY,
-            STEP_VIDEO_URL,
-            STEP_IMAGE_URL,
+    private static final String[] RECIPE_IMAGES = new String[]{
+            "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/nutellapie.jpg",
+            "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/brownies.jpg",
+            "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/yellowcake.jpg",
+            "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/cheesecake.jpg",
     };
 
     /**
@@ -149,7 +120,11 @@ public final class NetworkUtils {
      * @return
      */
     public static ContentValues[] getRecipes(JSONArray recipes) {
-        return getItems(recipes, RECIPE_CONTENT_FIELDS);
+        ContentValues[] items = getItems(recipes, BakingAppSchema.RECIPE_CONTENT_FIELDS);
+        for (int i = 0; i < RECIPE_IMAGES.length; i++) {
+            items[i].put(BakingAppSchema.RECIPE_IMAGE_URL, RECIPE_IMAGES[i]);
+        }
+        return items;
     }
 
     /**
@@ -159,9 +134,9 @@ public final class NetworkUtils {
      */
     public static ContentValues[] getSteps(JSONObject recipe) {
         try {
-            int recipeId = recipe.getInt(RECIPE_ID);
-            JSONArray ingredients = recipe.getJSONArray(RECIPE_STEPS_ARRAY);
-            return getItems(ingredients, STEP_CONTENT_FIELDS, RECIPE_REFERENCE_ID, recipeId);
+            int recipeId = recipe.getInt(BakingAppSchema.RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(BakingAppSchema.RECIPE_STEPS_ARRAY);
+            return getItems(ingredients, BakingAppSchema.STEP_CONTENT_FIELDS, BakingAppSchema.RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -176,9 +151,9 @@ public final class NetworkUtils {
      */
     public static ContentValues[] getIngredients(JSONObject recipe) {
         try {
-            int recipeId = recipe.getInt(RECIPE_ID);
-            JSONArray ingredients = recipe.getJSONArray(RECIPE_INGREDIENTS_ARRAY);
-            return getItems(ingredients, INGREDIENT_CONTENT_FIELDS, RECIPE_REFERENCE_ID, recipeId);
+            int recipeId = recipe.getInt(BakingAppSchema.RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(BakingAppSchema.RECIPE_INGREDIENTS_ARRAY);
+            return getItems(ingredients, BakingAppSchema.INGREDIENT_CONTENT_FIELDS, BakingAppSchema.RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();

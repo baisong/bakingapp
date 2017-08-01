@@ -26,6 +26,12 @@ public class RecipeRecordCollection implements Serializable {
         return null;
     }
 
+    public RecipeRecordCollection() {
+        recipes = new ContentValues[]{};
+        ingredients = new ContentValues[0][];
+        steps = new ContentValues[0][];
+    }
+
     public void setRecipes(ContentValues[] values) {
         recipes = values;
         ingredients = new ContentValues[recipes.length][];

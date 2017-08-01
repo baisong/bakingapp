@@ -1,82 +1,87 @@
 package com.example.android.bakingapp.adapters;
 
 import android.content.ContentValues;
-import android.support.v7.widget.RecyclerView;
+import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.tools.NetworkUtils;
+import com.example.android.bakingapp.data.BakingAppSchema;
+import com.squareup.picasso.Picasso;
 
-import butterknife.BindView;
-import butterknife.ButterKnife;
+public class StepAdapter extends BaseAdapter {
 
-public class StepAdapter extends RecyclerView.Adapter<StepAdapter.StepHolder> {
-
+    private Context mContext;
+    //private List<String> mRecipeNames;
     private ContentValues[] mItems;
+    private ImageView mThumbnail;
+    private TextView mTitle;
+    private TextView mBody;
+    private TextView mVideoURL;
+    private LayoutInflater mInflater;
 
-    /**
-     * Creates an Adapter.
-     */
-    public StepAdapter() {
-        super();
+    public StepAdapter(Context context, ContentValues[] items) {
+        mContext = context;
+        mItems = items;
+        mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
-    /**
-     * Cache of the children views for a item_ingredient view.
-     */
-    public class StepHolder extends RecyclerView.ViewHolder {
-        // @TODO Use butterknife
-        @BindView(R.id.tv_step_name)
-        TextView mName;
-
-        /**
-         * Sets up the item view.
-         */
-        public StepHolder(View view) {
-            super(view);
-            ButterKnife.bind(this, view);
-            // @TODO Use butterknife
-            // mName = (TextView) view.findViewById(R.id.tv_name);
-        }
-    }
-
-    /**
-     * Returns the number of items.
-     */
     @Override
-    public int getItemCount() {
-        if (mItems == null) return 0;
+    public int getCount() {
         return mItems.length;
     }
 
-    /**
-     * Initializes each visible view holder on the screen.
-     */
     @Override
-    public StepHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View view = inflater.inflate(R.layout.item_step, parent, false);
-
-        return new StepHolder(view);
+    public Object getItem(int i) {
+        return null;
     }
 
-    /**
-     * Displays the layout bound to each visible view.
-     */
     @Override
-    public void onBindViewHolder(StepHolder holder, int position) {
-        ContentValues itemValues = mItems[position];
-        holder.mName.setText(itemValues.getAsString(NetworkUtils.STEP_LABEL));
+    public long getItemId(int i) {
+        return 0;
     }
 
-    /**
-     * Refreshes the data held in the adapter.
-     */
-    public void setStepsData(ContentValues[] items) {
+    public void setItems(ContentValues[] items) {
         mItems = items;
         notifyDataSetChanged();
+    }
+
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.item_step, null);
+        mTitle = (TextView) rootView.findViewById(R.id.tv_step_title);
+        mThumbnail = (ImageView) rootView.findViewById(R.id.iv_thumbnail);
+        mVideoURL = (TextView) rootView.findViewById(R.id.tv_video_url);
+        mBody = (TextView) rootView.findViewById(R.id.tv_step_body);
+
+        ContentValues step = mItems[position];
+        Log.d("BakingApp", "Loading card...");
+        Log.d("BakingApp", step.toString());
+        mTitle.setText(step.getAsString(BakingAppSchema.STEP_TITLE));
+        mBody.setText(step.getAsString(BakingAppSchema.STEP_BODY));
+        String videoUrl = step.getAsString(BakingAppSchema.STEP_VIDEO_URL);
+        if (URLUtil.isValidUrl(videoUrl)) {
+            mVideoURL.setText(videoUrl);
+        }
+        else {
+            mVideoURL.setVisibility(View.GONE);
+        }
+        String imageUrl = step.getAsString(BakingAppSchema.STEP_IMAGE_URL);
+        if (URLUtil.isValidUrl(imageUrl)) {
+            Picasso.with(rootView.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
+                    .into(mThumbnail);
+        }
+        else {
+            mThumbnail.setVisibility(View.GONE);
+        }
+        return rootView;
     }
 }

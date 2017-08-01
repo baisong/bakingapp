@@ -38,8 +38,11 @@
         android:padding="@dimen/main_list_listview_padding"
         android:stretchMode="columnWidth"
         android:divider="@android:color/transparent"
-        android:dividerHeight="4dp"
-        android:verticalSpacing="24dp">
+        android:dividerHeight="8dp">
+        <!--
+
+        android:verticalSpacing="24dp"
+        -->
     </ListView>
 
 </LinearLayout>

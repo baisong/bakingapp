@@ -11,7 +11,7 @@ import android.widget.ListView;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.adapters.RecipeListAdapter;
-import com.example.android.bakingapp.data.DummyData;
+import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
 import java.util.List;
 
@@ -19,12 +19,15 @@ public class MainListFragment extends Fragment {
     OnCardClickListener mCallback;
 
     private List<String> mRecipeNames;
+    private RecipeRecordCollection mRecipeData;
     RecipeListAdapter mAdapter;
     private ListView mListView;
 
     public void setRecipeNames(List<String> data) {
-        mRecipeNames.clear();
-        mRecipeNames.addAll(data);
+        if (mRecipeNames != null) {
+            mRecipeNames.clear();
+            mRecipeNames.addAll(data);
+        }
         mAdapter.notifyDataSetChanged();
     }
 
@@ -51,8 +54,8 @@ public class MainListFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
         mListView = (ListView) rootView.findViewById(R.id.main_list_view);
 
-        mRecipeNames = DummyData.getRecipeNames();
-        mAdapter = new RecipeListAdapter(getContext(), mRecipeNames);
+        RecipeRecordCollection emptyCollection = new RecipeRecordCollection();
+        mAdapter = new RecipeListAdapter(getContext(), emptyCollection);
         mListView.setAdapter(mAdapter);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {

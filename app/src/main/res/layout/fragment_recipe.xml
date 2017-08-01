@@ -1,81 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?><!--
 @TODO Document me
 -->
-<android.support.v4.widget.NestedScrollView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingBottom="@dimen/recipe_card_paddingBottom"
-    android:paddingTop="@dimen/recipe_card_paddingTop">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <!--
-    @TODO Document me
-    -->
-        <android.support.constraint.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        android:orientation="vertical"
+        android:paddingBottom="@dimen/recipe_card_paddingBottom"
+        android:paddingTop="@dimen/recipe_card_paddingTop">
 
-            <ImageView
-                android:id="@+id/iv_recipe_pic"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginStart="0dp"
-                android:layout_marginTop="0dp"
-                android:adjustViewBounds="true"
-                android:scaleType="fitXY"
-                android:src="@drawable/ic_photo_size_select_actual_black_24dp"
-                app:layout_constraintLeft_toLeftOf="parent"
-                app:layout_constraintRight_toRightOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <!--
+        @TODO Document me
+        -->
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/iv_recipe_pic"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_marginStart="0dp"
+                    android:layout_marginTop="0dp"
+                    android:adjustViewBounds="true"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/ic_photo_size_select_actual_black_24dp"
+                    app:layout_constraintLeft_toLeftOf="parent"
+                    app:layout_constraintRight_toRightOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/tv_recipe_name"
+                    android:layout_width="368dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6dp"
+                    android:layout_marginLeft="8dp"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textColor="@color/colorPrimaryInverse"
+                    app:layout_constraintBottom_toBottomOf="@+id/iv_recipe_pic"
+                    app:layout_constraintLeft_toLeftOf="@+id/iv_recipe_pic"
+                    tools:layout_editor_absoluteX="8dp"
+                    tools:text="Recipe Name"></TextView>
+            </android.support.constraint.ConstraintLayout>
 
             <TextView
-                android:id="@+id/tv_recipe_name"
-                android:layout_width="368dp"
+                android:id="@+id/tv_ingredients_label"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="6dp"
-                android:layout_marginLeft="8dp"
-                android:textAppearance="?android:attr/textAppearanceLarge"
-                android:textColor="@color/colorPrimaryInverse"
-                app:layout_constraintBottom_toBottomOf="@+id/iv_recipe_pic"
-                app:layout_constraintLeft_toLeftOf="@+id/iv_recipe_pic"
-                tools:layout_editor_absoluteX="8dp"
-                tools:text="Recipe Name"></TextView>
-        </android.support.constraint.ConstraintLayout>
+                android:layout_marginBottom="@dimen/detail_list_margin_bottom"
+                android:layout_marginTop="@dimen/detail_list_margin_top"
+                android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
+                tools:text="Ingredients" />
 
-        <TextView
-            android:id="@+id/tv_ingredients_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/detail_list_margin_bottom"
-            android:layout_marginTop="@dimen/detail_list_margin_top"
-            android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
-            tools:text="Ingredients" />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rv_ingredients"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_ingredients"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
+            <TextView
+                android:id="@+id/tv_steps_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/detail_list_margin_top"
+                android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
+                tools:text="Steps" />
+        </LinearLayout>
+    </android.support.v4.widget.NestedScrollView>
 
-        <TextView
-            android:id="@+id/tv_steps_label"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/detail_list_margin_top"
-            android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
-            tools:text="Steps" />
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/rv_steps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"></android.support.v7.widget.RecyclerView>
-    </LinearLayout>
-</android.support.v4.widget.NestedScrollView>
+    <ListView
+        android:id="@+id/lv_recipe_steps"
+        android:scrollbars="none"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

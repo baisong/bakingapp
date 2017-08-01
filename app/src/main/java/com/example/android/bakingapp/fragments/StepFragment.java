@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,7 +16,7 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.adapters.IngredientAdapter;
-import com.example.android.bakingapp.adapters.StepAdapter;
+import com.example.android.bakingapp.adapters.StepRecyclerAdapter;
 import com.example.android.bakingapp.data.BakingAppSchema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
@@ -28,7 +27,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class DetailFragment extends Fragment {
+public class StepFragment extends Fragment {
 
     public static final String RECIPE_NAME_LIST = "recipeNames";
     public static final String CURRENT_RECIPE = "currentRecipe";
@@ -38,8 +37,7 @@ public class DetailFragment extends Fragment {
     private RecipeRecordCollection mRecipeData;
     private int mListIndex;
     private IngredientAdapter mIngredientAdapter;
-    private StepAdapter mStepAdapter;
-    //private StepRecyclerAdapter mStepRecyclerAdapter;
+    private StepRecyclerAdapter mStepRecyclerAdapter;
 
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
     @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
@@ -48,7 +46,7 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.lv_recipe_steps) ListView mStepsList;
     @BindView(R.id.iv_recipe_pic) ImageView mImage;
 
-    public DetailFragment() {
+    public StepFragment() {
     }
 
     @Override
@@ -61,6 +59,7 @@ public class DetailFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
         ButterKnife.bind(this, rootView);
+        /*
         // @TODO Get butterknife working so we don't have to do the following:
         //mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         mIngredientsLabel.setText(R.string.ingredients_label);
@@ -75,15 +74,11 @@ public class DetailFragment extends Fragment {
 
         // Set up steps list.
         //mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
-        //mStepRecyclerAdapter = new StepRecyclerAdapter();
+        mStepRecyclerAdapter = new StepRecyclerAdapter();
         //mStepsList.setNestedScrollingEnabled(false);
-        //mIngredientsList.setLayoutFrozen(true);
-        //mStepsList.setAdapter(mStepRecyclerAdapter);
-
-        mStepAdapter = new StepAdapter(getContext(), new ContentValues[]{});
-        mStepsList.setScrollContainer(false);
-        mStepsList.setAdapter(mStepAdapter);
-
+        mIngredientsList.setLayoutFrozen(true);
+        mStepsList.setAdapter(mStepRecyclerAdapter);
+        */
         return rootView;
     }
 
@@ -95,7 +90,7 @@ public class DetailFragment extends Fragment {
         ContentValues[] ingredients = mRecipeData.getIngredients(mListIndex);
         mIngredientAdapter.setIngredientsData(ingredients);
         Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
-        mStepAdapter.setItems(mRecipeData.getSteps(mListIndex));
+        mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mListIndex));
 
         ContentValues recipe = mRecipeData.getRecipe(mListIndex);
         mRecipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
@@ -106,19 +101,19 @@ public class DetailFragment extends Fragment {
                     .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
                     .into(mImage);
         }
-            /** Cycles through recipes
-            mRecipeName.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mListIndex < mRecipeNames.size() - 1) {
-                        mListIndex++;
-                    } else {
-                        mListIndex = 0;
-                    }
-                    mRecipeName.setText(mRecipeNames.get(mListIndex));
-                }
-            });
-             **/
+        /** Cycles through steps
+         mRecipeName.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+        if (mListIndex < mRecipeNames.size() - 1) {
+        mListIndex++;
+        } else {
+        mListIndex = 0;
+        }
+        mRecipeName.setText(mRecipeNames.get(mListIndex));
+        }
+        });
+         **/
     }
 
     public void setRecipeNames(List<String> recipeNames) {
