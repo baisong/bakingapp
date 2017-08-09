@@ -73,7 +73,7 @@ public class RecipeRecordCollection implements Serializable {
         return "Collection: " + String.valueOf(recipes.length) + " recipes";
     }
 
-    public static List<String> getRecipeNames() {
+    public List<String> getRecipeNames() {
         List<String> recipeNames = new ArrayList<>();
         for (int i = 0; i < recipes.length; i++) {
             recipeNames.add(recipes[i].getAsString(DummyData.RECIPE_NAME));

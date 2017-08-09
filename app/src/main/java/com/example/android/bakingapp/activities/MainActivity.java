@@ -8,6 +8,8 @@ import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -126,6 +128,10 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
     }
 
     public void onCardSelected(int position) {
+        onRecipeSelected(position);
+    }
+
+    private void onRecipeSelected(int position) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
             newFragment.setRecipeNames(mRecipeNames);
@@ -144,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
 
             startActivity(intent);
         }
-
     }
 
     private void updateRecipeData(RecipeRecordCollection collection) {
@@ -155,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
 
     public void showRecipes() {
         mListFragment.setRecipeNames(mRecipeNames);
+        invalidateOptionsMenu();
         notifyListFragment();
         //if (mTwoPane) mDetailFragment.setRecipeNames(mRecipeNames);
     }
@@ -190,5 +196,37 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
             }
         }
     }
+
+    /**
+     * Gets called every time the user presses the menu button.
+     * Use if your menu is dynamic.
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        if (mRecipeData != null && mRecipeData.getCount() > 0) {
+            List<String> names = mRecipeData.getRecipeNames();
+            for (int i = 0; i < names.size(); i++) {
+                menu.add(0, i, Menu.NONE, names.get(i));
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    /**
+     * Handles menu item selection by updating the data inside the RecyclerView.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id > 0 && id < 5) {
+            onRecipeSelected(id);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
 
 }

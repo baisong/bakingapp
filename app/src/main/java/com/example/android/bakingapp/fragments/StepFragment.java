@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
@@ -43,7 +42,7 @@ public class StepFragment extends Fragment {
     @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
     @BindView(R.id.rv_ingredients) RecyclerView mIngredientsList;
     @BindView(R.id.tv_steps_label) TextView mStepsLabel;
-    @BindView(R.id.lv_recipe_steps) ListView mStepsList;
+    @BindView(R.id.rv_steps) RecyclerView mStepsList;
     @BindView(R.id.iv_recipe_pic) ImageView mImage;
 
     public StepFragment() {

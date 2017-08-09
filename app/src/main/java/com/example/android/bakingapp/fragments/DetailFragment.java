@@ -12,12 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.adapters.IngredientAdapter;
-import com.example.android.bakingapp.adapters.StepAdapter;
+import com.example.android.bakingapp.adapters.StepRecyclerAdapter;
 import com.example.android.bakingapp.data.BakingAppSchema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
@@ -38,14 +37,14 @@ public class DetailFragment extends Fragment {
     private RecipeRecordCollection mRecipeData;
     private int mListIndex;
     private IngredientAdapter mIngredientAdapter;
-    private StepAdapter mStepAdapter;
-    //private StepRecyclerAdapter mStepRecyclerAdapter;
+    //private StepAdapter mStepAdapter;
+    private StepRecyclerAdapter mStepRecyclerAdapter;
 
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
     @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
     @BindView(R.id.rv_ingredients) RecyclerView mIngredientsList;
     @BindView(R.id.tv_steps_label) TextView mStepsLabel;
-    @BindView(R.id.lv_recipe_steps) ListView mStepsList;
+    @BindView(R.id.rv_steps) RecyclerView mStepsList;
     @BindView(R.id.iv_recipe_pic) ImageView mImage;
 
     public DetailFragment() {
@@ -74,16 +73,17 @@ public class DetailFragment extends Fragment {
         mIngredientsList.setAdapter(mIngredientAdapter);
 
         // Set up steps list.
-        //mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
-        //mStepRecyclerAdapter = new StepRecyclerAdapter();
-        //mStepsList.setNestedScrollingEnabled(false);
-        //mIngredientsList.setLayoutFrozen(true);
-        //mStepsList.setAdapter(mStepRecyclerAdapter);
+        mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
+        mStepRecyclerAdapter = new StepRecyclerAdapter(getContext());
+        mStepsList.setNestedScrollingEnabled(false);
+        mIngredientsList.setLayoutFrozen(true);
+        mStepsList.setAdapter(mStepRecyclerAdapter);
 
+        /*
         mStepAdapter = new StepAdapter(getContext(), new ContentValues[]{});
         mStepsList.setScrollContainer(false);
         mStepsList.setAdapter(mStepAdapter);
-
+        */
         return rootView;
     }
 
@@ -95,7 +95,7 @@ public class DetailFragment extends Fragment {
         ContentValues[] ingredients = mRecipeData.getIngredients(mListIndex);
         mIngredientAdapter.setIngredientsData(ingredients);
         Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
-        mStepAdapter.setItems(mRecipeData.getSteps(mListIndex));
+        mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mListIndex));
 
         ContentValues recipe = mRecipeData.getRecipe(mListIndex);
         mRecipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
