@@ -6,7 +6,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.DummyData;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
@@ -19,11 +18,13 @@ public class DetailActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Log.d("BakingApp", "...Launching DetailActivity (null instance state)");
             DetailFragment fragment = new DetailFragment();
-            fragment.setRecipeNames(DummyData.getRecipeNames());
-            int index = getIntent().getIntExtra(MainActivity.EXTRA_RECIPE_INDEX, 0);
+            int recipe = getIntent().getIntExtra(MainActivity.EXTRA_RECIPE_INDEX, 0);
+            int step = getIntent().getIntExtra(MainActivity.EXTRA_STEP_INDEX, 0);
             RecipeRecordCollection recipeData = (RecipeRecordCollection) getIntent().getSerializableExtra(MainActivity.EXTRA_RECIPE_DATA);
-            fragment.setListIndex(index);
             fragment.setRecipeData(recipeData);
+            fragment.setCurrentStep(recipe, step);
+            fragment.refreshSteps();
+
             FragmentManager fragmentManager = getSupportFragmentManager();
             fragmentManager.beginTransaction()
                     .add(R.id.recipe_container, fragment)

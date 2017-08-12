@@ -1,6 +1,7 @@
 package com.example.android.bakingapp.fragments;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,7 @@ import com.example.android.bakingapp.adapters.IngredientAdapter;
 import com.example.android.bakingapp.adapters.StepRecyclerAdapter;
 import com.example.android.bakingapp.data.BakingAppSchema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.tools.RecyclerItemClickListener;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -35,10 +37,11 @@ public class MainFragment extends Fragment {
 
     private List<String> mRecipeNames;
     private RecipeRecordCollection mRecipeData;
-    private int mListIndex;
+    private int mCurrentRecipe;
     private IngredientAdapter mIngredientAdapter;
-    //private StepAdapter mStepAdapter;
     private StepRecyclerAdapter mStepRecyclerAdapter;
+
+    OnStepClickListener mCallback;
 
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
     @BindView(R.id.tv_ingredients_label) TextView mIngredientsLabel;
@@ -50,12 +53,30 @@ public class MainFragment extends Fragment {
     public MainFragment() {
     }
 
+    public interface OnStepClickListener {
+        void onStepSelected(int recipe, int step);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+
+        // This makes sure that the host activity has implemented the callback interface
+        // If not, it throws an exception
+        try {
+            mCallback = (OnStepClickListener) context;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(context.toString()
+                    + " must implement OnImageClickListener");
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         if (savedInstanceState != null) {
             mRecipeNames = savedInstanceState.getStringArrayList(RECIPE_NAME_LIST);
-            mListIndex = savedInstanceState.getInt(CURRENT_RECIPE);
+            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE);
         }
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
@@ -72,6 +93,14 @@ public class MainFragment extends Fragment {
         mIngredientAdapter = new IngredientAdapter();
         mIngredientsList.setLayoutFrozen(true);
         mIngredientsList.setNestedScrollingEnabled(false);
+        /*
+        mIngredientsList.setOnItemClickListener(new RecyclerView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+                // Trigger the callback method and pass in the position that was clicked
+                mCallback.onStepSelected(position);
+            }
+        });*/
         mIngredientsList.setAdapter(mIngredientAdapter);
 
         // Set up steps list.
@@ -80,7 +109,13 @@ public class MainFragment extends Fragment {
         mStepsList.setLayoutManager(n);
         mStepRecyclerAdapter = new StepRecyclerAdapter(getContext());
         mStepsList.setNestedScrollingEnabled(false);
-        mIngredientsList.setLayoutFrozen(true);
+        mStepsList.addOnItemTouchListener(
+                new RecyclerItemClickListener(getContext(), mStepsList, new RecyclerItemClickListener.ClickListener() {
+                    @Override
+                    public void onItemClick(View view, int position) {
+                        mCallback.onStepSelected(mCurrentRecipe, position);
+                    }
+                }));
         mStepsList.setAdapter(mStepRecyclerAdapter);
 
         /*
@@ -104,26 +139,26 @@ public class MainFragment extends Fragment {
             mRecipeName.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    if (mListIndex < mRecipeNames.size() - 1) {
-                        mListIndex++;
+                    if (mCurrentRecipe < mRecipeNames.size() - 1) {
+                        mCurrentRecipe++;
                     } else {
-                        mListIndex = 0;
+                        mCurrentRecipe = 0;
                     }
-                    mRecipeName.setText(mRecipeNames.get(mListIndex));
+                    mRecipeName.setText(mRecipeNames.get(mCurrentRecipe));
                 }
             });
              **/
     }
 
     public void loadCurrentRecipe() {
-        ContentValues[] ingredients = mRecipeData.getIngredients(mListIndex);
-        Log.d("BakingApp","Load current recipe. Recipe Index: " + mListIndex + "; Ingredients: " + ingredients.length);
+        ContentValues[] ingredients = mRecipeData.getIngredients(mCurrentRecipe);
+        Log.d("BakingApp","Load current recipe. Recipe Index: " + mCurrentRecipe + "; Ingredients: " + ingredients.length);
         Log.d("BakingApp", ingredients[0].getAsString(BakingAppSchema.INGREDIENT_NAME));
         mIngredientAdapter.setIngredientsData(ingredients);
         Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
-        mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mListIndex));
+        mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mCurrentRecipe));
 
-        ContentValues recipe = mRecipeData.getRecipe(mListIndex);
+        ContentValues recipe = mRecipeData.getRecipe(mCurrentRecipe);
         mRecipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
         String imageUrl = recipe.getAsString(BakingAppSchema.RECIPE_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
@@ -143,12 +178,12 @@ public class MainFragment extends Fragment {
     }
 
     public void setListIndex(int index) {
-        mListIndex = index;
+        mCurrentRecipe = index;
     }
 
     @Override
     public void onSaveInstanceState(Bundle currentState) {
         currentState.putStringArrayList(RECIPE_NAME_LIST, (ArrayList<String>) mRecipeNames);
-        currentState.putInt(CURRENT_RECIPE, mListIndex);
+        currentState.putInt(CURRENT_RECIPE, mCurrentRecipe);
     }
 }

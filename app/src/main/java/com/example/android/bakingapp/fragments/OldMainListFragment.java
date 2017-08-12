@@ -44,7 +44,7 @@ public class OldMainListFragment extends Fragment {
         try {
             mCallback = (OnCardClickListener) context;
         } catch (ClassCastException e) {
-            throw new ClassCastException(context.toString() + " must define OnCardClickListener");
+            throw new ClassCastException(context.toString() + " must define OnStepClickListener");
         }
     }
 

@@ -26,8 +26,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity
-        //implements MainFragment.OnCardClickListener
+public class MainActivity extends AppCompatActivity implements MainFragment.OnStepClickListener
         //, LoaderCallbacks<RecipeRecordCollection>
 {
 
@@ -44,6 +43,7 @@ public class MainActivity extends AppCompatActivity
     //@BindView(R.id.tv_test) TextView mTest;
 
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
+    public final static String EXTRA_STEP_INDEX = "stepIndex";
     public final static String EXTRA_RECIPE_DATA = "recipeData";
     //private static final Uri RECIPES_URI = new Uri.Builder().scheme().authority().appendEncodedPath().build();
 
@@ -65,13 +65,6 @@ public class MainActivity extends AppCompatActivity
             mTwoPane = false;
         }
 
-        loadRecipeData();
-    }
-
-    /**
-     * Updates the RecyclerView to show the specified list of movies (remote sorted or favorites).
-     */
-    private void loadRecipeData() {
         new FetchRecipesTask().execute();
     }
 
@@ -80,31 +73,28 @@ public class MainActivity extends AppCompatActivity
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        }
-        else if (f instanceof MainFragment) {
+        } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
             Log.d("BakingApp", "MainActivity::notifyListFragment()");
-            if(mRecipeData.getCount() > 0) {
+            if (mRecipeData.getCount() > 0) {
                 log(mRecipeNames.get(0));
                 mMainFragment.setRecipeNames(mRecipeNames);
                 mMainFragment.setRecipeData(mRecipeData);
                 mMainFragment.setListIndex(0);
                 mMainFragment.loadCurrentRecipe();
             }
-        }
-        else {
+        } else {
             log("Invalid Main List Fragment.");
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-                //No call for super(). Bug on API Level > 11.
-            }
-            else {
-                super.onSaveInstanceState(outState, outPersistentState);
-            }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            //No call for super(). Bug on API Level > 11.
+        } else {
+            super.onSaveInstanceState(outState, outPersistentState);
+        }
     }
 
     private void log(String message) {
@@ -114,7 +104,7 @@ public class MainActivity extends AppCompatActivity
     public void addDetailFragment() {
         mDetailFragment = new DetailFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
-        mDetailFragment.setRecipeNames(mRecipeNames);
+        //mDetailFragment.setRecipeNames(mRecipeNames);
         fragmentManager.beginTransaction()
                 .add(R.id.recipe_container, mDetailFragment)
                 .commit();
@@ -134,37 +124,37 @@ public class MainActivity extends AppCompatActivity
         //mForecastAdapter.setWeatherData(null);
     }
 
-    public void onCardSelected(int position) {
-        onRecipeSelected(position);
+    /*
+    public void onCardSelected(int recipe, int step) {
+        onStepSelected(recipe, step);
     }
+    */
 
     private void onRecipeSelected(int position) {
         /**
          * @TODO Update the fragment this way, not via replace transaction.
          */
-         FragmentManager fragmentManager = getSupportFragmentManager();
-         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
-         if (f == null) {
-         throw new UnsupportedOperationException("Unable to load Main List fragment.");
-         }
-         else if (f instanceof MainFragment) {
-         mMainFragment = (MainFragment) f;
-         Log.d("BakingApp", "MainActivity::onRecipeSelected()");
-         if(mRecipeData.getCount() > 0) {
-         log(mRecipeNames.get(0));
-         mMainFragment.setRecipeNames(mRecipeNames);
-         mMainFragment.setRecipeData(mRecipeData);
-         mMainFragment.setListIndex(position);
-         mMainFragment.loadCurrentRecipe();
-         }
-         }
-         else {
-         log("Invalid Main List Fragment.");
-         }
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
+        if (f == null) {
+            throw new UnsupportedOperationException("Unable to load Main List fragment.");
+        } else if (f instanceof MainFragment) {
+            mMainFragment = (MainFragment) f;
+            Log.d("BakingApp", "MainActivity::onRecipeSelected()");
+            if (mRecipeData.getCount() > 0) {
+                log(mRecipeNames.get(0));
+                mMainFragment.setRecipeNames(mRecipeNames);
+                mMainFragment.setRecipeData(mRecipeData);
+                mMainFragment.setListIndex(position);
+                mMainFragment.loadCurrentRecipe();
+            }
+        } else {
+            log("Invalid Main List Fragment.");
+        }
         /*
         MainFragment newFragment = new MainFragment();
         newFragment.setRecipeNames(mRecipeNames);
-        newFragment.setListIndex(position);
+        newFragment.setCurrentStep(position);
         newFragment.setRecipeData(mRecipeData);
         newFragment.loadCurrentRecipe();
         getSupportFragmentManager().beginTransaction()
@@ -173,19 +163,21 @@ public class MainActivity extends AppCompatActivity
                 */
     }
 
-    private void onStepSelected(int position) {
+    public void onStepSelected(int recipe, int step) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
-            newFragment.setRecipeNames(mRecipeNames);
-            newFragment.setListIndex(position);
+            //newFragment.setRecipeNames(mRecipeNames);
             newFragment.setRecipeData(mRecipeData);
+            newFragment.setCurrentStep(recipe, step);
+            newFragment.refreshSteps();
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_container, newFragment)
                     .commit();
         } else {
             final Intent intent = new Intent(this, DetailActivity.class);
-            intent.putExtra(EXTRA_RECIPE_INDEX, position);
+            intent.putExtra(EXTRA_RECIPE_INDEX, recipe);
+            intent.putExtra(EXTRA_STEP_INDEX, step);
 
             Bundle bundle = new Bundle();
             bundle.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
@@ -194,6 +186,7 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
         }
     }
+
     private void updateRecipeData(RecipeRecordCollection collection) {
         Log.d("RecipeListActivity", collection.getInfoString());
         mRecipeData = collection;
@@ -216,7 +209,7 @@ public class MainActivity extends AppCompatActivity
         /*
         MainFragment newFragment = new MainFragment();
         newFragment.setRecipeNames(mRecipeNames);
-        newFragment.setListIndex(0);
+        newFragment.setCurrentStep(0);
         newFragment.setRecipeData(mRecipeData);
 
         getSupportFragmentManager().beginTransaction()
@@ -248,7 +241,7 @@ public class MainActivity extends AppCompatActivity
          */
         @Override
         protected void onPostExecute(RecipeRecordCollection collection) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            mLoadingIndicator.setVisibility(View.GONE);
             if (collection != null) {
                 showRecipes();
             } else {

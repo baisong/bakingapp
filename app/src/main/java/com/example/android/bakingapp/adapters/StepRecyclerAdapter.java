@@ -3,6 +3,7 @@ package com.example.android.bakingapp.adapters;
 import android.content.ContentValues;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -81,7 +82,7 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
     public StepHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_step, parent, false);
-
+        //view.setOnClickListener(new MyOnClickListener());
         return new StepHolder(view);
     }
 
@@ -89,13 +90,13 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
      * Displays the layout bound to each visible view.
      */
     @Override
-    public void onBindViewHolder(StepHolder holder, int position) {
+    public void onBindViewHolder(StepHolder holder, final int position) {
         ContentValues step = mItems[position];
         holder.mName.setText(step.getAsString(BakingAppSchema.STEP_TITLE));
         holder.mHolder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Log.d("BakingApp", "Hellooo!! " + String.valueOf(position));
             }
         });
         /*
