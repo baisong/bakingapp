@@ -15,7 +15,7 @@ import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
 import java.util.List;
 
-public class MainListFragment extends Fragment {
+public class OldMainListFragment extends Fragment {
     OnCardClickListener mCallback;
 
     private List<String> mRecipeNames;
@@ -31,7 +31,7 @@ public class MainListFragment extends Fragment {
         mAdapter.notifyDataSetChanged();
     }
 
-    public MainListFragment() {
+    public OldMainListFragment() {
     }
 
     public interface OnCardClickListener {
@@ -51,8 +51,8 @@ public class MainListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle state) {
 
-        final View rootView = inflater.inflate(R.layout.fragment_main_list, container, false);
-        mListView = (ListView) rootView.findViewById(R.id.main_list_view);
+        final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        //mListView = (ListView) rootView.findViewById(R.id.main_list_view);
 
         RecipeRecordCollection emptyCollection = new RecipeRecordCollection();
         mAdapter = new RecipeListAdapter(getContext(), emptyCollection);

@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -26,7 +27,7 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class StepFragment extends Fragment {
+public class MainFragment extends Fragment {
 
     public static final String RECIPE_NAME_LIST = "recipeNames";
     public static final String CURRENT_RECIPE = "currentRecipe";
@@ -36,6 +37,7 @@ public class StepFragment extends Fragment {
     private RecipeRecordCollection mRecipeData;
     private int mListIndex;
     private IngredientAdapter mIngredientAdapter;
+    //private StepAdapter mStepAdapter;
     private StepRecyclerAdapter mStepRecyclerAdapter;
 
     @BindView(R.id.tv_recipe_name) TextView mRecipeName;
@@ -45,7 +47,7 @@ public class StepFragment extends Fragment {
     @BindView(R.id.rv_steps) RecyclerView mStepsList;
     @BindView(R.id.iv_recipe_pic) ImageView mImage;
 
-    public StepFragment() {
+    public MainFragment() {
     }
 
     @Override
@@ -56,37 +58,67 @@ public class StepFragment extends Fragment {
             mListIndex = savedInstanceState.getInt(CURRENT_RECIPE);
         }
 
-        View rootView = inflater.inflate(R.layout.fragment_recipe, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
-        /*
         // @TODO Get butterknife working so we don't have to do the following:
         //mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         mIngredientsLabel.setText(R.string.ingredients_label);
         mStepsLabel.setText(R.string.steps_label);
 
         // Set up ingredients list.
-        mIngredientsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
+        LinearLayoutManager m = new LinearLayoutManager(this.getActivity());
+        m.setAutoMeasureEnabled(true);
+        mIngredientsList.setLayoutManager(m);
         mIngredientAdapter = new IngredientAdapter();
         mIngredientsList.setLayoutFrozen(true);
         mIngredientsList.setNestedScrollingEnabled(false);
         mIngredientsList.setAdapter(mIngredientAdapter);
 
         // Set up steps list.
-        //mStepsList.setLayoutManager(new LinearLayoutManager(this.getActivity()));
-        mStepRecyclerAdapter = new StepRecyclerAdapter();
-        //mStepsList.setNestedScrollingEnabled(false);
+        LinearLayoutManager n = new LinearLayoutManager(this.getActivity());
+        m.setAutoMeasureEnabled(true);
+        mStepsList.setLayoutManager(n);
+        mStepRecyclerAdapter = new StepRecyclerAdapter(getContext());
+        mStepsList.setNestedScrollingEnabled(false);
         mIngredientsList.setLayoutFrozen(true);
         mStepsList.setAdapter(mStepRecyclerAdapter);
+
+        /*
+        mStepAdapter = new StepAdapter(getContext(), new ContentValues[]{});
+        mStepsList.setScrollContainer(false);
+        mStepsList.setAdapter(mStepAdapter);
         */
         return rootView;
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d("BakingApp", mRecipeData.getInfoString());
+        //Log.d("BakingApp", mRecipeData.getInfoString());
         super.onActivityCreated(savedInstanceState);
 
+        if (mRecipeData != null && mRecipeData.getCount() > 0) {
+            Log.d("BakingApp", "MainFragment::onActivityCreated()");
+            loadCurrentRecipe();
+        }
+            /** Cycles through recipes
+            mRecipeName.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mListIndex < mRecipeNames.size() - 1) {
+                        mListIndex++;
+                    } else {
+                        mListIndex = 0;
+                    }
+                    mRecipeName.setText(mRecipeNames.get(mListIndex));
+                }
+            });
+             **/
+    }
+
+    public void loadCurrentRecipe() {
         ContentValues[] ingredients = mRecipeData.getIngredients(mListIndex);
+        Log.d("BakingApp","Load current recipe. Recipe Index: " + mListIndex + "; Ingredients: " + ingredients.length);
+        Log.d("BakingApp", ingredients[0].getAsString(BakingAppSchema.INGREDIENT_NAME));
         mIngredientAdapter.setIngredientsData(ingredients);
         Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
         mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mListIndex));
@@ -100,19 +132,6 @@ public class StepFragment extends Fragment {
                     .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
                     .into(mImage);
         }
-        /** Cycles through steps
-         mRecipeName.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View view) {
-        if (mListIndex < mRecipeNames.size() - 1) {
-        mListIndex++;
-        } else {
-        mListIndex = 0;
-        }
-        mRecipeName.setText(mRecipeNames.get(mListIndex));
-        }
-        });
-         **/
     }
 
     public void setRecipeNames(List<String> recipeNames) {

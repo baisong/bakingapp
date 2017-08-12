@@ -17,7 +17,7 @@ import android.widget.Toast;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.DummyData;
 import com.example.android.bakingapp.fragments.DetailFragment;
-import com.example.android.bakingapp.fragments.MainListFragment;
+import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
@@ -26,12 +26,13 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements MainListFragment.OnCardClickListener
+public class MainActivity extends AppCompatActivity
+        //implements MainFragment.OnCardClickListener
         //, LoaderCallbacks<RecipeRecordCollection>
 {
 
     private boolean mTwoPane;
-    private MainListFragment mListFragment;
+    private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
     private RecipeRecordCollection mRecipeData;
     private List<String> mRecipeNames;
@@ -54,9 +55,10 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
         ButterKnife.bind(this);
 
         mRecipeNames = DummyData.getRecipeNames();
-        notifyListFragment();
+        mRecipeData = new RecipeRecordCollection();
+        //notifyListFragment();
 
-        if (findViewById(R.id.android_me_linear_layout) != null) {
+        if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
             if (savedInstanceState == null) addDetailFragment();
         } else {
@@ -79,11 +81,16 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         }
-        else if (f instanceof MainListFragment) {
-            mListFragment = (MainListFragment) f;
-            log("Setting new names...");
-            log(mRecipeNames.get(0));
-            mListFragment.setRecipeNames(mRecipeNames);
+        else if (f instanceof MainFragment) {
+            mMainFragment = (MainFragment) f;
+            Log.d("BakingApp", "MainActivity::notifyListFragment()");
+            if(mRecipeData.getCount() > 0) {
+                log(mRecipeNames.get(0));
+                mMainFragment.setRecipeNames(mRecipeNames);
+                mMainFragment.setRecipeData(mRecipeData);
+                mMainFragment.setListIndex(0);
+                mMainFragment.loadCurrentRecipe();
+            }
         }
         else {
             log("Invalid Main List Fragment.");
@@ -132,16 +139,52 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
     }
 
     private void onRecipeSelected(int position) {
+        /**
+         * @TODO Update the fragment this way, not via replace transaction.
+         */
+         FragmentManager fragmentManager = getSupportFragmentManager();
+         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
+         if (f == null) {
+         throw new UnsupportedOperationException("Unable to load Main List fragment.");
+         }
+         else if (f instanceof MainFragment) {
+         mMainFragment = (MainFragment) f;
+         Log.d("BakingApp", "MainActivity::onRecipeSelected()");
+         if(mRecipeData.getCount() > 0) {
+         log(mRecipeNames.get(0));
+         mMainFragment.setRecipeNames(mRecipeNames);
+         mMainFragment.setRecipeData(mRecipeData);
+         mMainFragment.setListIndex(position);
+         mMainFragment.loadCurrentRecipe();
+         }
+         }
+         else {
+         log("Invalid Main List Fragment.");
+         }
+        /*
+        MainFragment newFragment = new MainFragment();
+        newFragment.setRecipeNames(mRecipeNames);
+        newFragment.setListIndex(position);
+        newFragment.setRecipeData(mRecipeData);
+        newFragment.loadCurrentRecipe();
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.recipe_container, newFragment)
+                .commit();
+                */
+    }
+
+    private void onStepSelected(int position) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
             newFragment.setRecipeNames(mRecipeNames);
             newFragment.setListIndex(position);
             newFragment.setRecipeData(mRecipeData);
+
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_container, newFragment)
                     .commit();
         } else {
-            final Intent intent = new Intent(this, RecipeActivity.class);
+            final Intent intent = new Intent(this, DetailActivity.class);
             intent.putExtra(EXTRA_RECIPE_INDEX, position);
 
             Bundle bundle = new Bundle();
@@ -151,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
             startActivity(intent);
         }
     }
-
     private void updateRecipeData(RecipeRecordCollection collection) {
         Log.d("RecipeListActivity", collection.getInfoString());
         mRecipeData = collection;
@@ -159,10 +201,28 @@ public class MainActivity extends AppCompatActivity implements MainListFragment.
     }
 
     public void showRecipes() {
-        mListFragment.setRecipeNames(mRecipeNames);
+        /*
+        mMainFragment.setRecipeNames(mRecipeNames);
+        mMainFragment.setRecipeData(mRecipeData);
+        mMainFragment
+        */
         invalidateOptionsMenu();
         notifyListFragment();
         //if (mTwoPane) mDetailFragment.setRecipeNames(mRecipeNames);
+    }
+
+
+    private void updateCurrentRecipe() {
+        /*
+        MainFragment newFragment = new MainFragment();
+        newFragment.setRecipeNames(mRecipeNames);
+        newFragment.setListIndex(0);
+        newFragment.setRecipeData(mRecipeData);
+
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.recipe_container, newFragment)
+                .commit();
+                */
     }
 
     public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {

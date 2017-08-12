@@ -10,14 +10,14 @@ import com.example.android.bakingapp.data.DummyData;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
-public class RecipeActivity extends AppCompatActivity {
+public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("BakingApp", "Launching RecipeActivity");
+        Log.d("BakingApp", "Launching DetailActivity");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
         if (savedInstanceState == null) {
-            Log.d("BakingApp", "...Launching RecipeActivity (null instance state)");
+            Log.d("BakingApp", "...Launching DetailActivity (null instance state)");
             DetailFragment fragment = new DetailFragment();
             fragment.setRecipeNames(DummyData.getRecipeNames());
             int index = getIntent().getIntExtra(MainActivity.EXTRA_RECIPE_INDEX, 0);

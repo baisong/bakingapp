@@ -43,7 +43,9 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
             super(view);
             ButterKnife.bind(this, view);
             // @TODO Use butterknife
-            // mName = (TextView) view.findViewById(R.id.tv_name);
+            mName = (TextView) view.findViewById(R.id.tv_ingredient_name);
+            mQuantity = (TextView) view.findViewById(R.id.tv_quantity);
+            mMeasure = (TextView) view.findViewById(R.id.tv_measure);
         }
     }
 

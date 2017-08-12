@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
 @TODO Document me
 -->
@@ -13,7 +14,7 @@
 -->
     <fragment
         android:id="@+id/main_list_fragment"
-        android:name="com.example.android.bakingapp.fragments.MainListFragment"
+        android:name="com.example.android.bakingapp.fragments.MainFragment"
         android:layout_width="400dp"
         android:layout_height="match_parent" />
     <!--
@@ -27,7 +28,7 @@
 @TODO Document me
 -->
     <LinearLayout
-        android:id="@+id/android_me_linear_layout"
+        android:id="@+id/ll_recipe_wrapper"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
