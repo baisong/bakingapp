@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
     public final static String EXTRA_STEP_INDEX = "stepIndex";
     public final static String EXTRA_RECIPE_DATA = "recipeData";
+    public final static String IS_TWO_PANE = "isTwoPane";
     //private static final Uri RECIPES_URI = new Uri.Builder().scheme().authority().appendEncodedPath().build();
 
     @Override
@@ -66,6 +67,20 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
 
         new FetchRecipesTask().execute();
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (findViewById(R.id.ll_recipe_wrapper) != null) {
+            mTwoPane = true;
+            if (!savedInstanceState.getBoolean(IS_TWO_PANE, false)) {
+                Log.d("BakingApp", "New orientation!!!");
+                addDetailFragment();
+            }
+        } else {
+            mTwoPane = false;
+        }
     }
 
     public void notifyListFragment() {
@@ -95,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         } else {
             super.onSaveInstanceState(outState, outPersistentState);
         }
+        outState.putBoolean(IS_TWO_PANE, mTwoPane);
     }
 
     private void log(String message) {
@@ -102,11 +118,15 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     }
 
     public void addDetailFragment() {
-        mDetailFragment = new DetailFragment();
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        //mDetailFragment.setRecipeNames(mRecipeNames);
-        fragmentManager.beginTransaction()
-                .add(R.id.recipe_container, mDetailFragment)
+        DetailFragment newFragment = new DetailFragment();
+        newFragment.setRecipeData(mRecipeData);
+        newFragment.setCurrentStep(1, 0);
+        newFragment.refreshSteps();
+        Log.d("BakingApp", "TEST");
+        Log.d("BakingApp", String.valueOf(newFragment.getStep()));
+        Log.d("BakingApp", String.valueOf(mRecipeData));
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.recipe_container, newFragment)
                 .commit();
     }
 

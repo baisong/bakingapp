@@ -2,7 +2,7 @@
     <string name="app_name">Baking App</string>
     <string name="ingredients_label">Ingredients</string>
     <string name="steps_label">Steps</string>
-    <string name="action_next_step">Next step</string>
+    <string name="action_next_step">Next</string>
     <string name="action_prev_step">Back</string>
     <string name="menu_recipe1">Recipe 1</string>
 </resources>

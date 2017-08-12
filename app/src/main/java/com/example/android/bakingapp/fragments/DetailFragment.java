@@ -154,7 +154,15 @@ public class DetailFragment extends Fragment {
     }
 
     public void refreshSteps() {
+        Log.d("BakingApp", "Refreshing Steps with "
+                + String.valueOf(mCurrentRecipe)
+                + ", " + String.valueOf(mCurrentStep));
         mSteps = mRecipeData.getSteps(mCurrentRecipe);
+        Log.d("BakingApp", "Steps: " + String.valueOf(mSteps));
+    }
+
+    public ContentValues getStep() {
+        return mSteps[mCurrentStep];
     }
 
     @Override
