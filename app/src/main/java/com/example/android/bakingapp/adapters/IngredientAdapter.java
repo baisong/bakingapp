@@ -28,7 +28,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
      * Cache of the children views for a item_ingredient view.
      */
     public class IngredientHolder extends RecyclerView.ViewHolder {
-        // @TODO Use butterknife
         @BindView(R.id.tv_ingredient_name)
         TextView mName;
         @BindView(R.id.tv_quantity)
@@ -42,7 +41,6 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         public IngredientHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-            // @TODO Use butterknife
             mName = (TextView) view.findViewById(R.id.tv_ingredient_name);
             mQuantity = (TextView) view.findViewById(R.id.tv_quantity);
             mMeasure = (TextView) view.findViewById(R.id.tv_measure);

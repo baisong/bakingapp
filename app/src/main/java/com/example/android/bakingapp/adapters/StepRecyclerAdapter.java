@@ -38,7 +38,6 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
      * Cache of the children views for a item_ingredient view.
      */
     public class StepHolder extends RecyclerView.ViewHolder {
-        // @TODO Use butterknife
 
         @BindView(R.id.tv_step_title) TextView mName;
         @BindView(R.id.ll_step_holder) LinearLayout mHolder;
@@ -49,7 +48,6 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
         public StepHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-            // @TODO Use butterknife
             /*
 
     @BindView(R.id.tv_step_title) TextView mName;

@@ -165,6 +165,33 @@ public class DetailFragment extends Fragment {
         return mSteps[mCurrentStep];
     }
 
+    public ContentValues setStep(RecipeRecordCollection data, int recipe, int step) {
+        if (data == null) {
+            throw new UnsupportedOperationException("Recipe data is null.");
+        }
+        if (data.getCount() < 1) {
+            throw new UnsupportedOperationException("Cannot set empty recipe data.");
+        }
+        mRecipeData = data;
+        if (recipe < 1 || recipe > 4) {
+            throw new UnsupportedOperationException("This version only supports 4 recipes.");
+        }
+        mCurrentRecipe = recipe;
+        if (step < 0 || step > 10) {
+            throw new UnsupportedOperationException("This version only supports 10 steps");
+        }
+        mCurrentStep = step;
+        mSteps = data.getSteps(recipe);
+        if (mSteps.length < 1) {
+            throw new UnsupportedOperationException("No steps found for recipe " + String.valueOf(recipe));
+        }
+        if (mCurrentStep >= mSteps.length) {
+            throw new UnsupportedOperationException("No step " + String.valueOf(step) + " for recipe " + String.valueOf(recipe));
+        }
+        mStep = mSteps[mCurrentStep];
+        return mStep;
+    }
+
     @Override
     public void onSaveInstanceState(Bundle currentState) {
         //currentState.putStringArrayList(RECIPE_NAME_LIST, (ArrayList<String>) mRecipeNames);

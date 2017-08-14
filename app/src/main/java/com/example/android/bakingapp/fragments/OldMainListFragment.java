@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import com.example.android.bakingapp.R;
@@ -53,7 +52,7 @@ public class OldMainListFragment extends Fragment {
 
         final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         //mListView = (ListView) rootView.findViewById(R.id.main_list_view);
-
+/*
         RecipeRecordCollection emptyCollection = new RecipeRecordCollection();
         mAdapter = new RecipeListAdapter(getContext(), emptyCollection);
         mListView.setAdapter(mAdapter);
@@ -64,7 +63,7 @@ public class OldMainListFragment extends Fragment {
                 mCallback.onCardSelected(position);
             }
         });
-
+*/
         return rootView;
     }
 

@@ -1,10 +1,9 @@
 package com.example.android.bakingapp.activities;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -56,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         ButterKnife.bind(this);
 
         mRecipeNames = DummyData.getRecipeNames();
-        mRecipeData = new RecipeRecordCollection();
+        //mRecipeData = new RecipeRecordCollection();
         //notifyListFragment();
 
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
@@ -72,15 +71,32 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
+            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(EXTRA_RECIPE_DATA);
+            log("Restored instance with data: " + mRecipeData.getInfoString());
+        } else {
+            log("Restored instance without recipe data. " + mRecipeData);
+        }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
             if (!savedInstanceState.getBoolean(IS_TWO_PANE, false)) {
-                Log.d("BakingApp", "New orientation!!!");
+                log("New orientation!!!");
+                log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 addDetailFragment();
+                // ???
+                // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
             }
         } else {
             mTwoPane = false;
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(IS_TWO_PANE, mTwoPane);
+        log("OUT STATE: " + mRecipeData.getInfoString());
+        outState.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
+        super.onSaveInstanceState(outState);
     }
 
     public void notifyListFragment() {
@@ -90,7 +106,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
-            Log.d("BakingApp", "MainActivity::notifyListFragment()");
+            log("MainActivity::notifyListFragment()");
             if (mRecipeData.getCount() > 0) {
                 log(mRecipeNames.get(0));
                 mMainFragment.setRecipeNames(mRecipeNames);
@@ -103,31 +119,21 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            //No call for super(). Bug on API Level > 11.
-        } else {
-            super.onSaveInstanceState(outState, outPersistentState);
-        }
-        outState.putBoolean(IS_TWO_PANE, mTwoPane);
-    }
-
     private void log(String message) {
         Log.d(LOG_TAG, message);
     }
 
     public void addDetailFragment() {
-        DetailFragment newFragment = new DetailFragment();
-        newFragment.setRecipeData(mRecipeData);
-        newFragment.setCurrentStep(1, 0);
-        newFragment.refreshSteps();
-        Log.d("BakingApp", "TEST");
-        Log.d("BakingApp", String.valueOf(newFragment.getStep()));
-        Log.d("BakingApp", String.valueOf(mRecipeData));
+        mDetailFragment = new DetailFragment();
+        debugData();
+        ContentValues step = mDetailFragment.setStep(mRecipeData, 1, 0);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.recipe_container, newFragment)
+                .replace(R.id.recipe_container, mDetailFragment)
                 .commit();
+    }
+
+    private void debugData() {
+        log("HOW MANY RECIPES? " + String.valueOf(mRecipeData.getCount()));
     }
 
     public void showErrorMessage() {
@@ -135,35 +141,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         t.show();
     }
 
-
-    /**
-     * This method is used when we are resetting data, so that at one point in time during a
-     * refresh of our data, you can see that there is no data showing.
-     */
-    private void invalidateData() {
-        //mForecastAdapter.setWeatherData(null);
-    }
-
-    /*
-    public void onCardSelected(int recipe, int step) {
-        onStepSelected(recipe, step);
-    }
-    */
-
     private void onRecipeSelected(int position) {
-        /**
-         * @TODO Update the fragment this way, not via replace transaction.
-         */
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
-            Log.d("BakingApp", "MainActivity::onRecipeSelected()");
+            log("MainActivity::onRecipeSelected()");
             if (mRecipeData.getCount() > 0) {
                 log(mRecipeNames.get(0));
-                mMainFragment.setRecipeNames(mRecipeNames);
                 mMainFragment.setRecipeData(mRecipeData);
                 mMainFragment.setListIndex(position);
                 mMainFragment.loadCurrentRecipe();
@@ -171,26 +158,14 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         } else {
             log("Invalid Main List Fragment.");
         }
-        /*
-        MainFragment newFragment = new MainFragment();
-        newFragment.setRecipeNames(mRecipeNames);
-        newFragment.setCurrentStep(position);
-        newFragment.setRecipeData(mRecipeData);
-        newFragment.loadCurrentRecipe();
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.recipe_container, newFragment)
-                .commit();
-                */
     }
 
     public void onStepSelected(int recipe, int step) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
-            //newFragment.setRecipeNames(mRecipeNames);
             newFragment.setRecipeData(mRecipeData);
             newFragment.setCurrentStep(recipe, step);
             newFragment.refreshSteps();
-
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.recipe_container, newFragment)
                     .commit();
@@ -198,44 +173,24 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             final Intent intent = new Intent(this, DetailActivity.class);
             intent.putExtra(EXTRA_RECIPE_INDEX, recipe);
             intent.putExtra(EXTRA_STEP_INDEX, step);
-
             Bundle bundle = new Bundle();
             bundle.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
             intent.putExtras(bundle);
-
             startActivity(intent);
         }
     }
 
     private void updateRecipeData(RecipeRecordCollection collection) {
-        Log.d("RecipeListActivity", collection.getInfoString());
+        log("Update recipe data with: " + collection.getInfoString());
         mRecipeData = collection;
-        mRecipeNames = mRecipeData.getRecipeNames();
+        log("Updated to: " + mRecipeData.getInfoString());
     }
 
     public void showRecipes() {
-        /*
-        mMainFragment.setRecipeNames(mRecipeNames);
-        mMainFragment.setRecipeData(mRecipeData);
-        mMainFragment
-        */
+        //mMainFragment.setRecipeData(mRecipeData);
         invalidateOptionsMenu();
         notifyListFragment();
         //if (mTwoPane) mDetailFragment.setRecipeNames(mRecipeNames);
-    }
-
-
-    private void updateCurrentRecipe() {
-        /*
-        MainFragment newFragment = new MainFragment();
-        newFragment.setRecipeNames(mRecipeNames);
-        newFragment.setCurrentStep(0);
-        newFragment.setRecipeData(mRecipeData);
-
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.recipe_container, newFragment)
-                .commit();
-                */
     }
 
     public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
@@ -263,6 +218,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         protected void onPostExecute(RecipeRecordCollection collection) {
             mLoadingIndicator.setVisibility(View.GONE);
             if (collection != null) {
+                updateRecipeData(collection);
                 showRecipes();
             } else {
                 showErrorMessage();

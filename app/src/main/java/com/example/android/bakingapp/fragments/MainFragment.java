@@ -81,7 +81,6 @@ public class MainFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
-        // @TODO Get butterknife working so we don't have to do the following:
         //mRecipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
         mIngredientsLabel.setText(R.string.ingredients_label);
         mStepsLabel.setText(R.string.steps_label);
