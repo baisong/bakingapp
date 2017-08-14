@@ -1,6 +1,5 @@
 package com.example.android.bakingapp.activities;
 
-import android.content.ContentValues;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.DummyData;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
@@ -33,31 +31,36 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
     private RecipeRecordCollection mRecipeData;
-    private List<String> mRecipeNames;
+    private int mCurrentRecipe;
+    private int mCurrentStep;
     private static final String LOG_TAG = "BakingApp_MainActivity";
-    private static final String LIST_FRAG_TAG = "BakingApp_ListFragment";
 
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
-    //@BindView(R.id.tv_test) TextView mTest;
 
     public final static String EXTRA_RECIPE_INDEX = "recipeName";
     public final static String EXTRA_STEP_INDEX = "stepIndex";
     public final static String EXTRA_RECIPE_DATA = "recipeData";
     public final static String IS_TWO_PANE = "isTwoPane";
-    //private static final Uri RECIPES_URI = new Uri.Builder().scheme().authority().appendEncodedPath().build();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        mRecipeNames = DummyData.getRecipeNames();
-        //mRecipeData = new RecipeRecordCollection();
-        //notifyListFragment();
-
+        if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
+            mCurrentRecipe = savedInstanceState.getInt(EXTRA_RECIPE_DATA);
+            if (savedInstanceState.containsKey(EXTRA_STEP_INDEX)) {
+                mCurrentStep = savedInstanceState.getInt(EXTRA_RECIPE_DATA);
+            }
+            else {
+                mCurrentStep = 0;
+            }
+        }
+        else {
+            mCurrentRecipe = 0;
+            mCurrentStep = 0;
+        }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
             if (savedInstanceState == null) addDetailFragment();
@@ -65,7 +68,21 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mTwoPane = false;
         }
 
+        log("NEW STATE ***"
+                + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
+
         new FetchRecipesTask().execute();
+    }
+
+
+    private String quickLogData() {
+        if (mRecipeData == null) {
+            return "0";
+        }
+        return String.valueOf(mRecipeData.getCount());
     }
 
     @Override
@@ -73,15 +90,18 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
             mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(EXTRA_RECIPE_DATA);
-            log("Restored instance with data: " + mRecipeData.getInfoString());
+            mCurrentRecipe = savedInstanceState.getInt(EXTRA_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(EXTRA_STEP_INDEX);
+            notifyFragments();
+            //log("Restored instance with data: " + mRecipeData.getInfoString());
         } else {
-            log("Restored instance without recipe data. " + mRecipeData);
+            //log("Restored instance without recipe data. " + mRecipeData);
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
             if (!savedInstanceState.getBoolean(IS_TWO_PANE, false)) {
                 log("New orientation!!!");
-                log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
+                //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 addDetailFragment();
                 // ???
                 // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
@@ -89,13 +109,32 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         } else {
             mTwoPane = false;
         }
+
+        log("IN STATE <<<"
+                + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
+    }
+
+    private void notifyFragments() {
+        if (mDetailFragment != null) {
+            mDetailFragment.setRecipeData(mRecipeData);
+            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
+        }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(IS_TWO_PANE, mTwoPane);
-        log("OUT STATE: " + mRecipeData.getInfoString());
+        outState.putInt(EXTRA_RECIPE_INDEX, mCurrentRecipe);
+        outState.putInt(EXTRA_STEP_INDEX, mCurrentStep);
         outState.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
+        log("OUT STATE >>>"
+                + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
         super.onSaveInstanceState(outState);
     }
 
@@ -108,10 +147,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mMainFragment = (MainFragment) f;
             log("MainActivity::notifyListFragment()");
             if (mRecipeData.getCount() > 0) {
-                log(mRecipeNames.get(0));
-                mMainFragment.setRecipeNames(mRecipeNames);
                 mMainFragment.setRecipeData(mRecipeData);
-                mMainFragment.setListIndex(0);
+                mMainFragment.setCurrentRecipe(mCurrentRecipe);
                 mMainFragment.loadCurrentRecipe();
             }
         } else {
@@ -126,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     public void addDetailFragment() {
         mDetailFragment = new DetailFragment();
         debugData();
-        ContentValues step = mDetailFragment.setStep(mRecipeData, 1, 0);
+        mDetailFragment.setStep(mRecipeData, 1, 0);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.recipe_container, mDetailFragment)
                 .commit();
@@ -150,9 +187,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mMainFragment = (MainFragment) f;
             log("MainActivity::onRecipeSelected()");
             if (mRecipeData.getCount() > 0) {
-                log(mRecipeNames.get(0));
                 mMainFragment.setRecipeData(mRecipeData);
-                mMainFragment.setListIndex(position);
+                mMainFragment.setCurrentRecipe(position);
                 mMainFragment.loadCurrentRecipe();
             }
         } else {
@@ -181,9 +217,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     }
 
     private void updateRecipeData(RecipeRecordCollection collection) {
-        log("Update recipe data with: " + collection.getInfoString());
+        //log("Update recipe data with: " + collection.getInfoString());
         mRecipeData = collection;
-        log("Updated to: " + mRecipeData.getInfoString());
+        if (mDetailFragment != null) {
+            mDetailFragment.setRecipeData(mRecipeData);
+        }
+        //log("Updated to: " + mRecipeData.getInfoString());
     }
 
     public void showRecipes() {

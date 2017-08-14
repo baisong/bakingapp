@@ -72,7 +72,6 @@ public final class NetworkUtils {
     @Nullable
     public static RecipeRecordCollection fetch() {
         URL movieQueryUrl = buildUrl();
-        Log.d(LOG_TAG, movieQueryUrl.toString());
         try {
             String jsonString = getResponseFromHttpUrl(movieQueryUrl);
             RecipeRecordCollection collection = new RecipeRecordCollection(jsonString);

@@ -43,6 +43,18 @@ public class RecipeRecordCollection implements Serializable {
         loadFromJson(json);
     }
 
+    public boolean hasData() {
+        if (mRawJson == null || mRawJson.length() == 0) return false;
+        try {
+            JSONArray recipes = new JSONArray(mRawJson);
+            ContentValues[] r = parseRecipes(recipes);
+            return r.length > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public void loadFromJson(String json) {
         mRawJson = json;
         recipes = new ContentValues[]{};
@@ -59,6 +71,10 @@ public class RecipeRecordCollection implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void reload() {
+        loadFromJson(mRawJson);
     }
 
     /**

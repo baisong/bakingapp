@@ -82,6 +82,9 @@ public class DetailFragment extends Fragment {
     }
 
     private void updateStepView() {
+        if (mStep == null) {
+            return;
+        }
         mStep = mSteps[mCurrentStep];
         //Log.d("BakingApp", mStep.toString());
         mTitle.setText(mStep.getAsString(BakingAppSchema.STEP_TITLE));
@@ -108,7 +111,7 @@ public class DetailFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        Log.d("BakingApp", mRecipeData.getInfoString());
+        //Log.d("BakingApp", mRecipeData.getInfoString());
         super.onActivityCreated(savedInstanceState);
 
         /*
@@ -162,15 +165,18 @@ public class DetailFragment extends Fragment {
     }
 
     public ContentValues getStep() {
-        return mSteps[mCurrentStep];
+        return mStep;
     }
 
-    public ContentValues setStep(RecipeRecordCollection data, int recipe, int step) {
+    public void setStep(RecipeRecordCollection data, int recipe, int step) {
         if (data == null) {
             throw new UnsupportedOperationException("Recipe data is null.");
         }
         if (data.getCount() < 1) {
-            throw new UnsupportedOperationException("Cannot set empty recipe data.");
+            if (data.hasData()) data.reload();
+            if (data.getCount() < 1) {
+                throw new UnsupportedOperationException("Cannot set empty recipe data.");
+            }
         }
         mRecipeData = data;
         if (recipe < 1 || recipe > 4) {
@@ -189,7 +195,6 @@ public class DetailFragment extends Fragment {
             throw new UnsupportedOperationException("No step " + String.valueOf(step) + " for recipe " + String.valueOf(recipe));
         }
         mStep = mSteps[mCurrentStep];
-        return mStep;
     }
 
     @Override

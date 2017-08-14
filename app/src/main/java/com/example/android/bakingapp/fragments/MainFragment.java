@@ -168,15 +168,11 @@ public class MainFragment extends Fragment {
         }
     }
 
-    public void setRecipeNames(List<String> recipeNames) {
-        mRecipeNames = recipeNames;
-    }
-
     public void setRecipeData(RecipeRecordCollection data) {
         mRecipeData = data;
     }
 
-    public void setListIndex(int index) {
+    public void setCurrentRecipe(int index) {
         mCurrentRecipe = index;
     }
 
