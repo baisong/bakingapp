@@ -4,7 +4,7 @@ package com.example.android.bakingapp.data;
  * Created by oren on 7/31/17.
  */
 
-public class BakingAppSchema {
+public class Schema {
     public static final String RECIPE_ID = "id";
     public static final String RECIPE_NAME = "name";
     public static final String RECIPE_INGREDIENTS_ARRAY = "ingredients";

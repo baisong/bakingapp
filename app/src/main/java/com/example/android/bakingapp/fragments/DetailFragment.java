@@ -16,18 +16,21 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.example.android.bakingapp.data.State.CURRENT_RECIPE_INDEX;
+import static com.example.android.bakingapp.data.State.CURRENT_STEP_INDEX;
+import static com.example.android.bakingapp.data.State.IS_TWO_PANE;
+import static com.example.android.bakingapp.data.State.RECIPE_DATA;
+
 public class DetailFragment extends Fragment {
 
-    public static final String RECIPE_NAME_LIST = "recipeNames";
-    public static final String CURRENT_RECIPE = "currentRecipe";
-    private static final String TAG = "DetailFragment";
+    private static final String LOG_TAG = "BakingApp [DET]{Frag}";
 
     private ContentValues[] mSteps;
     private ContentValues mStep;
@@ -35,6 +38,7 @@ public class DetailFragment extends Fragment {
     private RecipeRecordCollection mRecipeData;
     private int mCurrentStep;
     private int mCurrentRecipe;
+    private boolean mTwoPane;
 
     @BindView(R.id.tv_step_title)
     TextView mTitle;
@@ -55,11 +59,23 @@ public class DetailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-
+        log("create 1.");
         if (savedInstanceState != null) {
-            //mRecipeNames = savedInstanceState.getStringArrayList(RECIPE_NAME_LIST);
-            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE);
+            log("create 1. EXISTS");
+            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
+            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
+            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
+        } else {
+            log("create 1. NULL");
+            // Data has been set in DetailActivity.createFragmentFromExplicitIntent
         }
+
+        log("NEW >>>"
+                + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, rootView);
@@ -77,36 +93,23 @@ public class DetailFragment extends Fragment {
                 navigateNext();
             }
         });
+        log("update 1.");
+        if (mStep == null) {
+            log("update 1. NULL");
+        }
+        log("update 2.");
+        setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
+        if (mStep == null) {
+            log("update 2. NULL");
+        }
+        log("update 3.");
+        mStep = getStep();
+        if (mStep == null) {
+            log("update 3. NULL");
+            return rootView;
+        }
         updateStepView();
         return rootView;
-    }
-
-    private void updateStepView() {
-        if (mStep == null) {
-            return;
-        }
-        mStep = mSteps[mCurrentStep];
-        //Log.d("BakingApp", mStep.toString());
-        mTitle.setText(mStep.getAsString(BakingAppSchema.STEP_TITLE));
-        mBody.setText(mStep.getAsString(BakingAppSchema.STEP_BODY));
-        String videoUrl = mStep.getAsString(BakingAppSchema.STEP_VIDEO_URL);
-        if (URLUtil.isValidUrl(videoUrl)) {
-            mVideoURL.setText(videoUrl);
-            mVideoURL.setVisibility(View.VISIBLE);
-        } else {
-            mVideoURL.setVisibility(View.GONE);
-        }
-        String imageUrl = mStep.getAsString(BakingAppSchema.STEP_IMAGE_URL);
-        if (URLUtil.isValidUrl(imageUrl)) {
-            Log.d("BakingApp", "Picasso loading... " + imageUrl);
-            mThumbnail.setVisibility(View.VISIBLE);
-            Picasso.with(mContext)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
-                    .into(mThumbnail);
-        } else {
-            mThumbnail.setVisibility(View.GONE);
-        }
     }
 
     @Override
@@ -121,8 +124,8 @@ public class DetailFragment extends Fragment {
         mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mCurrentRecipe));
 
         ContentValues recipe = mRecipeData.getRecipe(mCurrentRecipe);
-        mRecipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
-        String imageUrl = recipe.getAsString(BakingAppSchema.RECIPE_IMAGE_URL);
+        mRecipeName.setText(recipe.getAsString(Schema.RECIPE_NAME));
+        String imageUrl = recipe.getAsString(Schema.RECIPE_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(getContext())
                     .load(imageUrl)
@@ -157,11 +160,11 @@ public class DetailFragment extends Fragment {
     }
 
     public void refreshSteps() {
-        Log.d("BakingApp", "Refreshing Steps with "
+        log("Refreshing Steps with "
                 + String.valueOf(mCurrentRecipe)
                 + ", " + String.valueOf(mCurrentStep));
         mSteps = mRecipeData.getSteps(mCurrentRecipe);
-        Log.d("BakingApp", "Steps: " + String.valueOf(mSteps));
+        log("Steps: " + String.valueOf(mSteps));
     }
 
     public ContentValues getStep() {
@@ -179,7 +182,7 @@ public class DetailFragment extends Fragment {
             }
         }
         mRecipeData = data;
-        if (recipe < 1 || recipe > 4) {
+        if (recipe < 0 || recipe > 3) {
             throw new UnsupportedOperationException("This version only supports 4 recipes.");
         }
         mCurrentRecipe = recipe;
@@ -199,8 +202,7 @@ public class DetailFragment extends Fragment {
 
     @Override
     public void onSaveInstanceState(Bundle currentState) {
-        //currentState.putStringArrayList(RECIPE_NAME_LIST, (ArrayList<String>) mRecipeNames);
-        currentState.putInt(CURRENT_RECIPE, mCurrentRecipe);
+        currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
     }
 
     private void showToast(String message) {
@@ -223,5 +225,46 @@ public class DetailFragment extends Fragment {
             mCurrentStep = mCurrentStep + 1;
             updateStepView();
         }
+    }
+
+    private void updateStepView() {
+        log("update 1.");
+        if (mStep == null) {
+            log("update 1. NULL");
+            return;
+        }
+        log("update 2.");
+        mStep = mSteps[mCurrentStep];
+        //Log.d("BakingApp", mStep.toString());
+        mTitle.setText(mStep.getAsString(Schema.STEP_TITLE));
+        mBody.setText(mStep.getAsString(Schema.STEP_BODY));
+        String videoUrl = mStep.getAsString(Schema.STEP_VIDEO_URL);
+        if (URLUtil.isValidUrl(videoUrl)) {
+            mVideoURL.setText(videoUrl);
+            mVideoURL.setVisibility(View.VISIBLE);
+        } else {
+            mVideoURL.setVisibility(View.GONE);
+        }
+        String imageUrl = mStep.getAsString(Schema.STEP_IMAGE_URL);
+        if (URLUtil.isValidUrl(imageUrl)) {
+            log("Picasso loading... " + imageUrl);
+            mThumbnail.setVisibility(View.VISIBLE);
+            Picasso.with(mContext)
+                    .load(imageUrl)
+                    .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
+                    .into(mThumbnail);
+        } else {
+            mThumbnail.setVisibility(View.GONE);
+        }
+    }
+
+    private void log(String message) {
+        Log.d(LOG_TAG, message);
+    }
+    private String quickLogData() {
+        if (mRecipeData == null) {
+            return "0";
+        }
+        return String.valueOf(mRecipeData.getCount());
     }
 }

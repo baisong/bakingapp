@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 import com.squareup.picasso.Picasso;
 
 public class StepAdapter extends BaseAdapter {
@@ -63,16 +63,16 @@ public class StepAdapter extends BaseAdapter {
         ContentValues step = mItems[position];
         Log.d("BakingApp", "Loading card...");
         Log.d("BakingApp", step.toString());
-        mTitle.setText(step.getAsString(BakingAppSchema.STEP_TITLE));
-        mBody.setText(step.getAsString(BakingAppSchema.STEP_BODY));
-        String videoUrl = step.getAsString(BakingAppSchema.STEP_VIDEO_URL);
+        mTitle.setText(step.getAsString(Schema.STEP_TITLE));
+        mBody.setText(step.getAsString(Schema.STEP_BODY));
+        String videoUrl = step.getAsString(Schema.STEP_VIDEO_URL);
         if (URLUtil.isValidUrl(videoUrl)) {
             mVideoURL.setText(videoUrl);
         }
         else {
             mVideoURL.setVisibility(View.GONE);
         }
-        String imageUrl = step.getAsString(BakingAppSchema.STEP_IMAGE_URL);
+        String imageUrl = step.getAsString(Schema.STEP_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(rootView.getContext())
                     .load(imageUrl)

@@ -13,6 +13,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
@@ -35,25 +36,20 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     private int mCurrentRecipe;
     private int mCurrentStep;
 
-    private static final String LOG_TAG = "BakingApp_Mai_Activity";
+    private static final String LOG_TAG = "BakingApp [MAI]{Acty}";
 
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
-
-    public final static String EXTRA_RECIPE_INDEX = "recipeName";
-    public final static String EXTRA_STEP_INDEX = "stepIndex";
-    public final static String EXTRA_RECIPE_DATA = "recipeData";
-    public final static String IS_TWO_PANE = "isTwoPane";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        if (savedInstanceState != null && savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
-            mCurrentRecipe = savedInstanceState.getInt(EXTRA_RECIPE_DATA);
-            if (savedInstanceState.containsKey(EXTRA_STEP_INDEX)) {
-                mCurrentStep = savedInstanceState.getInt(EXTRA_RECIPE_DATA);
+        if (savedInstanceState != null && savedInstanceState.containsKey(State.RECIPE_DATA)) {
+            mCurrentRecipe = savedInstanceState.getInt(State.RECIPE_DATA);
+            if (savedInstanceState.containsKey(State.CURRENT_STEP_INDEX)) {
+                mCurrentStep = savedInstanceState.getInt(State.RECIPE_DATA);
             }
             else {
                 mCurrentStep = 0;
@@ -90,10 +86,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(EXTRA_RECIPE_DATA);
-            mCurrentRecipe = savedInstanceState.getInt(EXTRA_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(EXTRA_STEP_INDEX);
+        if (savedInstanceState.containsKey(State.RECIPE_DATA)) {
+            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(State.RECIPE_DATA);
+            mCurrentRecipe = savedInstanceState.getInt(State.CURRENT_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(State.CURRENT_STEP_INDEX);
             notifyFragments();
             //log("Restored instance with data: " + mRecipeData.getInfoString());
         } else {
@@ -101,7 +97,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
-            if (!savedInstanceState.getBoolean(IS_TWO_PANE)) {
+            if (!savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
                 log("New orientation!!! Now horizontal");
                 //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 addDetailFragment();
@@ -113,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             }
         } else {
             mTwoPane = false;
-            if (savedInstanceState.getBoolean(IS_TWO_PANE)) {
+            if (savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
                 log("New orientation!!! Now vertical");
                 //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 //addDetailFragment();
@@ -141,10 +137,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(IS_TWO_PANE, mTwoPane);
-        outState.putInt(EXTRA_RECIPE_INDEX, mCurrentRecipe);
-        outState.putInt(EXTRA_STEP_INDEX, mCurrentStep);
-        outState.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
+        outState.putBoolean(State.IS_TWO_PANE, mTwoPane);
+        outState.putInt(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        outState.putInt(State.CURRENT_STEP_INDEX, mCurrentStep);
+        outState.putSerializable(State.RECIPE_DATA, mRecipeData);
         log("Mai OUT >>>"
                 + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
@@ -222,10 +218,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
                     .commit();
         } else {
             final Intent intent = new Intent(this, DetailActivity.class);
-            intent.putExtra(EXTRA_RECIPE_INDEX, recipe);
-            intent.putExtra(EXTRA_STEP_INDEX, step);
+            intent.putExtra(State.CURRENT_RECIPE_INDEX, recipe);
+            intent.putExtra(State.CURRENT_STEP_INDEX, step);
             Bundle bundle = new Bundle();
-            bundle.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
+            bundle.putSerializable(State.RECIPE_DATA, mRecipeData);
             intent.putExtras(bundle);
             startActivity(intent);
         }

@@ -11,7 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -90,7 +90,7 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
     @Override
     public void onBindViewHolder(StepHolder holder, final int position) {
         ContentValues step = mItems[position];
-        holder.mName.setText(step.getAsString(BakingAppSchema.STEP_TITLE));
+        holder.mName.setText(step.getAsString(Schema.STEP_TITLE));
         holder.mHolder.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -98,15 +98,15 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
             }
         });
         /*
-        holder.mBody.setText(step.getAsString(BakingAppSchema.STEP_BODY));
-        String videoUrl = step.getAsString(BakingAppSchema.STEP_VIDEO_URL);
+        holder.mBody.setText(step.getAsString(Schema.STEP_BODY));
+        String videoUrl = step.getAsString(Schema.STEP_VIDEO_URL);
         if (URLUtil.isValidUrl(videoUrl)) {
             holder.mVideoURL.setText(videoUrl);
         }
         else {
             holder.mVideoURL.setVisibility(View.GONE);
         }
-        String imageUrl = step.getAsString(BakingAppSchema.STEP_IMAGE_URL);
+        String imageUrl = step.getAsString(Schema.STEP_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(mContext)
                     .load(imageUrl)
@@ -116,7 +116,7 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
         else {
             holder.mThumbnail.setVisibility(View.GONE);
         }
-        holder.mName.setText(step.getAsString(BakingAppSchema.STEP_TITLE));
+        holder.mName.setText(step.getAsString(Schema.STEP_TITLE));
         */
     }
 

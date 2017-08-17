@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
 
@@ -53,8 +53,8 @@ public class RecipeListAdapter extends BaseAdapter {
         ContentValues recipe = mRecipeData.getRecipe(position);
         Log.d("BakingApp", "Loading card...");
         Log.d("BakingApp", recipe.toString());
-        recipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
-        String imageUrl = recipe.getAsString(BakingAppSchema.RECIPE_IMAGE_URL);
+        recipeName.setText(recipe.getAsString(Schema.RECIPE_NAME));
+        String imageUrl = recipe.getAsString(Schema.RECIPE_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(rootView.getContext())
                     .load(imageUrl)

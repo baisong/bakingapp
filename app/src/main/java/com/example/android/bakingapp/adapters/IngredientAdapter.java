@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -73,9 +73,9 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     @Override
     public void onBindViewHolder(IngredientHolder holder, int position) {
         ContentValues itemValues = mItems[position];
-        holder.mName.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_NAME));
-        holder.mQuantity.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_QUANTITY));
-        holder.mMeasure.setText(itemValues.getAsString(BakingAppSchema.INGREDIENT_MEASURE));
+        holder.mName.setText(itemValues.getAsString(Schema.INGREDIENT_NAME));
+        holder.mQuantity.setText(itemValues.getAsString(Schema.INGREDIENT_QUANTITY));
+        holder.mMeasure.setText(itemValues.getAsString(Schema.INGREDIENT_MEASURE));
     }
 
     /**

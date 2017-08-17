@@ -18,7 +18,7 @@ import android.widget.TextView;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.adapters.IngredientAdapter;
 import com.example.android.bakingapp.adapters.StepRecyclerAdapter;
-import com.example.android.bakingapp.data.BakingAppSchema;
+import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.example.android.bakingapp.tools.RecyclerItemClickListener;
 import com.squareup.picasso.Picasso;
@@ -33,7 +33,7 @@ public class MainFragment extends Fragment {
 
     public static final String RECIPE_NAME_LIST = "recipeNames";
     public static final String CURRENT_RECIPE = "currentRecipe";
-    private static final String TAG = "DetailFragment";
+    private static final String LOG_TAG = "BakingApp [MAI]{Frag}";
 
     private List<String> mRecipeNames;
     private RecipeRecordCollection mRecipeData;
@@ -127,39 +127,25 @@ public class MainFragment extends Fragment {
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        //Log.d("BakingApp", mRecipeData.getInfoString());
         super.onActivityCreated(savedInstanceState);
 
         if (mRecipeData != null && mRecipeData.getCount() > 0) {
-            Log.d("BakingApp", "MainFragment::onActivityCreated()");
+            log("onActivityCreated()");
             loadCurrentRecipe();
         }
-            /** Cycles through recipes
-            mRecipeName.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mCurrentRecipe < mRecipeNames.size() - 1) {
-                        mCurrentRecipe++;
-                    } else {
-                        mCurrentRecipe = 0;
-                    }
-                    mRecipeName.setText(mRecipeNames.get(mCurrentRecipe));
-                }
-            });
-             **/
     }
 
     public void loadCurrentRecipe() {
         ContentValues[] ingredients = mRecipeData.getIngredients(mCurrentRecipe);
-        Log.d("BakingApp","Loading recipe at "
+        log("Loading recipe at "
                 + mCurrentRecipe + "; Ingredients: "
-                + ingredients.length + "; " + ingredients[0].getAsString(BakingAppSchema.INGREDIENT_NAME));
+                + ingredients.length + "; " + ingredients[0].getAsString(Schema.INGREDIENT_NAME));
         mIngredientAdapter.setIngredientsData(ingredients);
         mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mCurrentRecipe));
 
         ContentValues recipe = mRecipeData.getRecipe(mCurrentRecipe);
-        mRecipeName.setText(recipe.getAsString(BakingAppSchema.RECIPE_NAME));
-        String imageUrl = recipe.getAsString(BakingAppSchema.RECIPE_IMAGE_URL);
+        mRecipeName.setText(recipe.getAsString(Schema.RECIPE_NAME));
+        String imageUrl = recipe.getAsString(Schema.RECIPE_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(getContext())
                     .load(imageUrl)
@@ -180,5 +166,15 @@ public class MainFragment extends Fragment {
     public void onSaveInstanceState(Bundle currentState) {
         currentState.putStringArrayList(RECIPE_NAME_LIST, (ArrayList<String>) mRecipeNames);
         currentState.putInt(CURRENT_RECIPE, mCurrentRecipe);
+    }
+
+    private void log(String message) {
+        Log.d(LOG_TAG, message);
+    }
+    private String quickLogData() {
+        if (mRecipeData == null) {
+            return "0";
+        }
+        return String.valueOf(mRecipeData.getCount());
     }
 }

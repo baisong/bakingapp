@@ -9,10 +9,10 @@ import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 
-import static com.example.android.bakingapp.activities.MainActivity.EXTRA_RECIPE_DATA;
-import static com.example.android.bakingapp.activities.MainActivity.EXTRA_RECIPE_INDEX;
-import static com.example.android.bakingapp.activities.MainActivity.EXTRA_STEP_INDEX;
-import static com.example.android.bakingapp.activities.MainActivity.IS_TWO_PANE;
+import static com.example.android.bakingapp.data.State.RECIPE_DATA;
+import static com.example.android.bakingapp.data.State.CURRENT_RECIPE_INDEX;
+import static com.example.android.bakingapp.data.State.CURRENT_STEP_INDEX;
+import static com.example.android.bakingapp.data.State.IS_TWO_PANE;
 
 public class DetailActivity extends AppCompatActivity {
 
@@ -21,27 +21,24 @@ public class DetailActivity extends AppCompatActivity {
     private boolean mTwoPane;
     private RecipeRecordCollection mRecipeData;
 
-    private static final String LOG_TAG = "BakingApp_Det_Frag";
+    private static final String LOG_TAG = "BakingApp [DET]{Acty}";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.d("BakingApp", "Launching DetailActivity");
+        log("onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
         if (savedInstanceState == null) {
             createFragmentFromExplicitIntent();
         }
-        else {
-            // Already handled in restoreInstanceState.
-        }
     }
 
     private void createFragmentFromExplicitIntent() {
-        Log.d("BakingApp", "...Launching DetailActivity (null instance state)");
-        mCurrentRecipe = getIntent().getIntExtra(EXTRA_RECIPE_INDEX, 0);
-        mCurrentStep = getIntent().getIntExtra(EXTRA_STEP_INDEX, 0);
-        mRecipeData = (RecipeRecordCollection) getIntent().getSerializableExtra(EXTRA_RECIPE_DATA);
-        log("Det NEW >>>"
+        log("savedInstanceState == null");
+        mCurrentRecipe = getIntent().getIntExtra(CURRENT_RECIPE_INDEX, 0);
+        mCurrentStep = getIntent().getIntExtra(CURRENT_STEP_INDEX, 0);
+        mRecipeData = (RecipeRecordCollection) getIntent().getSerializableExtra(RECIPE_DATA);
+        log("NEW >>>"
                 + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)
@@ -61,13 +58,13 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState.containsKey(EXTRA_RECIPE_DATA)) {
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(EXTRA_RECIPE_DATA);
-            mCurrentRecipe = savedInstanceState.getInt(EXTRA_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(EXTRA_STEP_INDEX);
+        if (savedInstanceState.containsKey(RECIPE_DATA)) {
+            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
+            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
             mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
         }
-        log("Det IN >>>"
+        log("RESTORE >>>"
                 + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)
@@ -77,10 +74,10 @@ public class DetailActivity extends AppCompatActivity {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean(IS_TWO_PANE, mTwoPane);
-        outState.putInt(EXTRA_RECIPE_INDEX, mCurrentRecipe);
-        outState.putInt(EXTRA_STEP_INDEX, mCurrentStep);
-        outState.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
-        log("Det OUT >>>"
+        outState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        outState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
+        outState.putSerializable(RECIPE_DATA, mRecipeData);
+        log("OUT >>>"
                 + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)

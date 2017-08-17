@@ -2,8 +2,7 @@ package com.example.android.bakingapp.tools;
 
 import android.content.ContentValues;
 
-import com.example.android.bakingapp.data.BakingAppSchema;
-import com.example.android.bakingapp.data.DummyData;
+import com.example.android.bakingapp.data.Schema;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,6 +11,8 @@ import org.json.JSONObject;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.android.bakingapp.data.Schema.RECIPE_NAME;
 
 public class RecipeRecordCollection implements Serializable {
     String mRawJson;
@@ -83,9 +84,9 @@ public class RecipeRecordCollection implements Serializable {
      * @return
      */
     public static ContentValues[] parseRecipes(JSONArray recipes) {
-        ContentValues[] items = getItems(recipes, BakingAppSchema.RECIPE_CONTENT_FIELDS);
+        ContentValues[] items = getItems(recipes, Schema.RECIPE_CONTENT_FIELDS);
         for (int i = 0; i < RECIPE_IMAGES.length; i++) {
-            items[i].put(BakingAppSchema.RECIPE_IMAGE_URL, RECIPE_IMAGES[i]);
+            items[i].put(Schema.RECIPE_IMAGE_URL, RECIPE_IMAGES[i]);
         }
         return items;
     }
@@ -98,9 +99,9 @@ public class RecipeRecordCollection implements Serializable {
      */
     public static ContentValues[] parseSteps(JSONObject recipe) {
         try {
-            int recipeId = recipe.getInt(BakingAppSchema.RECIPE_ID);
-            JSONArray ingredients = recipe.getJSONArray(BakingAppSchema.RECIPE_STEPS_ARRAY);
-            return getItems(ingredients, BakingAppSchema.STEP_CONTENT_FIELDS, BakingAppSchema.RECIPE_REFERENCE_ID, recipeId);
+            int recipeId = recipe.getInt(Schema.RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(Schema.RECIPE_STEPS_ARRAY);
+            return getItems(ingredients, Schema.STEP_CONTENT_FIELDS, Schema.RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -115,9 +116,9 @@ public class RecipeRecordCollection implements Serializable {
      */
     public static ContentValues[] parseIngredients(JSONObject recipe) {
         try {
-            int recipeId = recipe.getInt(BakingAppSchema.RECIPE_ID);
-            JSONArray ingredients = recipe.getJSONArray(BakingAppSchema.RECIPE_INGREDIENTS_ARRAY);
-            return getItems(ingredients, BakingAppSchema.INGREDIENT_CONTENT_FIELDS, BakingAppSchema.RECIPE_REFERENCE_ID, recipeId);
+            int recipeId = recipe.getInt(Schema.RECIPE_ID);
+            JSONArray ingredients = recipe.getJSONArray(Schema.RECIPE_INGREDIENTS_ARRAY);
+            return getItems(ingredients, Schema.INGREDIENT_CONTENT_FIELDS, Schema.RECIPE_REFERENCE_ID, recipeId);
         }
         catch (JSONException e) {
             e.printStackTrace();
@@ -248,7 +249,7 @@ public class RecipeRecordCollection implements Serializable {
     public List<String> getRecipeNames() {
         List<String> recipeNames = new ArrayList<>();
         for (int i = 0; i < recipes.length; i++) {
-            recipeNames.add(recipes[i].getAsString(DummyData.RECIPE_NAME));
+            recipeNames.add(recipes[i].getAsString(RECIPE_NAME));
         }
 
         return recipeNames;
