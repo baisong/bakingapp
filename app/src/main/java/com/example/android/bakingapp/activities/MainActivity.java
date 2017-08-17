@@ -31,9 +31,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
     private RecipeRecordCollection mRecipeData;
+
     private int mCurrentRecipe;
     private int mCurrentStep;
-    private static final String LOG_TAG = "BakingApp_MainActivity";
+
+    private static final String LOG_TAG = "BakingApp_Mai_Activity";
 
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
@@ -99,15 +101,28 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
-            if (!savedInstanceState.getBoolean(IS_TWO_PANE, false)) {
-                log("New orientation!!!");
+            if (!savedInstanceState.getBoolean(IS_TWO_PANE)) {
+                log("New orientation!!! Now horizontal");
                 //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 addDetailFragment();
                 // ???
                 // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
             }
+            else {
+                log("Restore but no rotate - still horizontal");
+            }
         } else {
             mTwoPane = false;
+            if (savedInstanceState.getBoolean(IS_TWO_PANE)) {
+                log("New orientation!!! Now vertical");
+                //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
+                //addDetailFragment();
+                // ???
+                // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
+            }
+            else {
+                log("Restore but no rotate - still vertical");
+            }
         }
 
         log("IN STATE <<<"
@@ -130,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         outState.putInt(EXTRA_RECIPE_INDEX, mCurrentRecipe);
         outState.putInt(EXTRA_STEP_INDEX, mCurrentStep);
         outState.putSerializable(EXTRA_RECIPE_DATA, mRecipeData);
-        log("OUT STATE >>>"
+        log("Mai OUT >>>"
                 + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)
@@ -145,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
-            log("MainActivity::notifyListFragment()");
+            //log("MainActivity::notifyListFragment()");
             if (mRecipeData.getCount() > 0) {
                 mMainFragment.setRecipeData(mRecipeData);
                 mMainFragment.setCurrentRecipe(mCurrentRecipe);
@@ -162,8 +177,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     public void addDetailFragment() {
         mDetailFragment = new DetailFragment();
-        debugData();
         mDetailFragment.setStep(mRecipeData, 1, 0);
+        debugData();
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.recipe_container, mDetailFragment)
                 .commit();

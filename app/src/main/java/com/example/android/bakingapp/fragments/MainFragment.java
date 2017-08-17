@@ -151,10 +151,10 @@ public class MainFragment extends Fragment {
 
     public void loadCurrentRecipe() {
         ContentValues[] ingredients = mRecipeData.getIngredients(mCurrentRecipe);
-        Log.d("BakingApp","Load current recipe. Recipe Index: " + mCurrentRecipe + "; Ingredients: " + ingredients.length);
-        Log.d("BakingApp", ingredients[0].getAsString(BakingAppSchema.INGREDIENT_NAME));
+        Log.d("BakingApp","Loading recipe at "
+                + mCurrentRecipe + "; Ingredients: "
+                + ingredients.length + "; " + ingredients[0].getAsString(BakingAppSchema.INGREDIENT_NAME));
         mIngredientAdapter.setIngredientsData(ingredients);
-        Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
         mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mCurrentRecipe));
 
         ContentValues recipe = mRecipeData.getRecipe(mCurrentRecipe);
