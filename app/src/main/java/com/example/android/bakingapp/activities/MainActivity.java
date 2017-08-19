@@ -202,11 +202,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
-            log("MainActivity::onRecipeSelected()");
-            if (mRecipeData.getCount() > 0) {
+            if (dataLoaded()) {
                 mMainFragment.setRecipeData(mRecipeData);
                 mMainFragment.setCurrentRecipe(mCurrentRecipe);
                 mMainFragment.loadCurrentRecipe();
+                if (mTwoPane) {
+                    addDetailFragment();
+                }
             }
         } else {
             log("Invalid Main List Fragment.");
@@ -300,7 +302,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id > 0 && id < 5) {
+        if (id >= 0 && id < 4) {
             onRecipeSelected(id);
             return true;
         }
