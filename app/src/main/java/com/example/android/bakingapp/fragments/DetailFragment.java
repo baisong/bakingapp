@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
+import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
 
@@ -62,10 +63,12 @@ public class DetailFragment extends Fragment {
         log("create 1.");
         if (savedInstanceState != null) {
             log("create 1. EXISTS");
+            /*
             mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
             mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
             mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
             mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
+            */
         } else {
             log("create 1. NULL");
             // Data has been set in DetailActivity.createFragmentFromExplicitIntent
@@ -98,9 +101,14 @@ public class DetailFragment extends Fragment {
             log("update 1. NULL");
         }
         log("update 2.");
-        setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
-        if (mStep == null) {
-            log("update 2. NULL");
+        try {
+            setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
+            if (mStep == null) {
+                log("update 2. NULL");
+            }
+        }
+        catch (UnsupportedOperationException e) {
+            e.printStackTrace();
         }
         log("update 3.");
         mStep = getStep();
@@ -110,6 +118,33 @@ public class DetailFragment extends Fragment {
         }
         updateStepView();
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        log("=== onViewCreated ===");
+
+        log("NEW >>>"
+                + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
+        if (savedInstanceState != null) {
+            log("create 1. EXISTS");
+            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
+            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
+            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
+            log("NEW >>>"
+                    + " twoPane: " + String.valueOf(mTwoPane)
+                    + "; Step: " + String.valueOf(mCurrentRecipe)
+                    + "," + String.valueOf(mCurrentStep)
+                    + "; Data: " + quickLogData());
+        } else {
+            log("create 1. NULL");
+            // Data has been set in DetailActivity.createFragmentFromExplicitIntent
+        }
     }
 
     @Override
@@ -203,17 +238,28 @@ public class DetailFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle currentState) {
         currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        currentState.putInt(CURRENT_STEP_INDEX,mCurrentStep);
+        currentState.putSerializable(RECIPE_DATA, mRecipeData);
+        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        super.onSaveInstanceState(currentState);
     }
 
     private void showToast(String message) {
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
     }
 
+
+    public void setCurrentStep(int newValue) {
+        mCurrentStep = newValue;
+        State.getInstance(getContext()).put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+    }
+
     public void navigateBack() {
         if (mCurrentStep == 0) {
             showToast("First step");
         } else {
-            mCurrentStep = mCurrentStep - 1;
+            setCurrentStep(mCurrentStep - 1);
             updateStepView();
         }
     }
@@ -222,7 +268,7 @@ public class DetailFragment extends Fragment {
         if ((mCurrentStep + 1) == mSteps.length) {
             showToast("Last step");
         } else {
-            mCurrentStep = mCurrentStep + 1;
+            setCurrentStep(mCurrentStep + 1);
             updateStepView();
         }
     }

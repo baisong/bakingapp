@@ -43,39 +43,55 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        log("onCreate BEG");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        if (savedInstanceState != null && savedInstanceState.containsKey(State.RECIPE_DATA)) {
-            mCurrentRecipe = savedInstanceState.getInt(State.RECIPE_DATA);
-            if (savedInstanceState.containsKey(State.CURRENT_STEP_INDEX)) {
-                mCurrentStep = savedInstanceState.getInt(State.RECIPE_DATA);
-            }
-            else {
-                mCurrentStep = 0;
+        if (savedInstanceState != null) {
+            getCurrentRecipeStep();
+            if(savedInstanceState.containsKey(State.RECIPE_DATA)) {
+                mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(State.RECIPE_DATA);
             }
         }
         else {
-            mCurrentRecipe = 0;
-            mCurrentStep = 0;
+            log("1. NO DATA FROM PREVIOUS STATE");
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
-            if (savedInstanceState == null) addDetailFragment();
+            debug("TwoPane!");
+            //if (dataLoaded() || savedInstanceState == null) {
+            //addDetailFragment();
+            //}
         } else {
             mTwoPane = false;
         }
 
-        log("NEW STATE ***"
-                + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
 
-        new FetchRecipesTask().execute();
+        if (dataLoaded()) {
+            loadMainFragmentRecipe();
+            if (mTwoPane) addDetailFragment();
+        }
+        else {
+            new FetchRecipesTask().execute();
+        }
+        debug("onCreate END");
     }
 
+    private void getCurrentRecipeStep() {
+        mCurrentRecipe = 0;
+        mCurrentStep = 0;
+        try {
+            mCurrentRecipe = State.getInstance(getApplicationContext()).getInt(State.Key.ACTIVE_RECIPE_INT);
+            mCurrentStep = State.getInstance().getInt(State.Key.ACTIVE_STEP_INT);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private boolean dataLoaded() {
+        return mRecipeData != null && mRecipeData.getCount() > 0;
+    }
     private String quickLogData() {
         if (mRecipeData == null) {
             return "0";
@@ -85,15 +101,18 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        debug("onRestore BEG");
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState.containsKey(State.RECIPE_DATA)) {
             mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(State.RECIPE_DATA);
-            mCurrentRecipe = savedInstanceState.getInt(State.CURRENT_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(State.CURRENT_STEP_INDEX);
-            notifyFragments();
-            //log("Restored instance with data: " + mRecipeData.getInfoString());
+            log("onRestore WITH DATA FROM INSTANCE");
         } else {
-            //log("Restored instance without recipe data. " + mRecipeData);
+            log("onRestore NO DATA FROM INSTANCE");
+        }
+        getCurrentRecipeStep();
+        if (dataLoaded() && mDetailFragment != null) {
+            mDetailFragment.setRecipeData(mRecipeData);
+            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
@@ -120,19 +139,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
                 log("Restore but no rotate - still vertical");
             }
         }
-
-        log("IN STATE <<<"
-                + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
-    }
-
-    private void notifyFragments() {
-        if (mDetailFragment != null) {
-            mDetailFragment.setRecipeData(mRecipeData);
-            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
-        }
+        debug("onRestore END");
     }
 
     @Override
@@ -141,22 +148,18 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         outState.putInt(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
         outState.putInt(State.CURRENT_STEP_INDEX, mCurrentStep);
         outState.putSerializable(State.RECIPE_DATA, mRecipeData);
-        log("Mai OUT >>>"
-                + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
+        debug("saveInst END");
         super.onSaveInstanceState(outState);
     }
 
-    public void notifyListFragment() {
+    public void loadMainFragmentRecipe() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
         } else if (f instanceof MainFragment) {
             mMainFragment = (MainFragment) f;
-            //log("MainActivity::notifyListFragment()");
+            debug("loadMainFrag");
             if (mRecipeData.getCount() > 0) {
                 mMainFragment.setRecipeData(mRecipeData);
                 mMainFragment.setCurrentRecipe(mCurrentRecipe);
@@ -173,15 +176,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     public void addDetailFragment() {
         mDetailFragment = new DetailFragment();
-        mDetailFragment.setStep(mRecipeData, 1, 0);
-        debugData();
+        mDetailFragment.setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
+        debug("addDetailFrag");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.recipe_container, mDetailFragment)
                 .commit();
-    }
-
-    private void debugData() {
-        log("HOW MANY RECIPES? " + String.valueOf(mRecipeData.getCount()));
     }
 
     public void showErrorMessage() {
@@ -190,6 +189,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     }
 
     private void onRecipeSelected(int position) {
+        log("=== onRecipeSelected ===");
+        mCurrentRecipe = position;
+        mCurrentStep = 0;
+        State.getInstance(getApplicationContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        debug("selected");
+
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
@@ -199,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             log("MainActivity::onRecipeSelected()");
             if (mRecipeData.getCount() > 0) {
                 mMainFragment.setRecipeData(mRecipeData);
-                mMainFragment.setCurrentRecipe(position);
+                mMainFragment.setCurrentRecipe(mCurrentRecipe);
                 mMainFragment.loadCurrentRecipe();
             }
         } else {
@@ -236,13 +242,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         //log("Updated to: " + mRecipeData.getInfoString());
     }
 
-    public void showRecipes() {
-        //mMainFragment.setRecipeData(mRecipeData);
-        invalidateOptionsMenu();
-        notifyListFragment();
-        //if (mTwoPane) mDetailFragment.setRecipeNames(mRecipeNames);
-    }
-
     public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
 
         @Override
@@ -269,7 +268,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mLoadingIndicator.setVisibility(View.GONE);
             if (collection != null) {
                 updateRecipeData(collection);
-                showRecipes();
+                invalidateOptionsMenu();
+                loadMainFragmentRecipe();
+                if (mTwoPane) addDetailFragment();
             } else {
                 showErrorMessage();
             }
@@ -308,4 +309,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     }
 
 
+    private void debug(String note) {
+        log(note + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
+    }
 }
