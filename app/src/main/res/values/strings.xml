@@ -7,4 +7,7 @@
     <string name="menu_recipe1">Recipe 1</string>
     <string name="action_play_step_video">Play video</string>
     <string name="step_divider">/</string>
+    <string name="appwidget_text">RECIPE</string>
+    <string name="configure">Configure</string>
+    <string name="add_widget">Add widget</string>
 </resources>

@@ -51,6 +51,10 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
                 tools:layout_editor_absoluteX="8dp"
                 tools:text="Recipe Name"></TextView>
         </android.support.constraint.ConstraintLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
         <TextView
             android:id="@+id/tv_ingredients_label"
             android:layout_width="match_parent"
@@ -63,6 +67,7 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
             android:id="@+id/rv_ingredients"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        </LinearLayout>
         <TextView
             android:id="@+id/tv_steps_label"
             android:layout_width="match_parent"
