@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
     private int mCurrentRecipe;
     private int mCurrentStep;
+    private String DETAIL_FRAGMENT_TAG = "DetailFrag";
 
     private static final String LOG_TAG = "BakingApp [MAI]{Acty}";
 
@@ -54,10 +55,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             }
         }
         else {
-            log("1. NO DATA FROM PREVIOUS STATE");
+            log("INIT NO PLAYER");
+            State.getInstance(getApplicationContext()).put(State.Key.IS_PLAYING, false);
         }
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
+            releaseFragmentPlayer();
             debug("TwoPane!");
             //if (dataLoaded() || savedInstanceState == null) {
             //addDetailFragment();
@@ -75,6 +78,26 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             new FetchRecipesTask().execute();
         }
         debug("onCreate END");
+    }
+
+    private void releaseFragmentPlayer() {
+        log("Looking for fragment to release...");
+        if (mDetailFragment != null && mDetailFragment instanceof DetailFragment) {
+            log("EUREKA!!!");
+            mDetailFragment.releasePlayer("From Main");
+        }
+        /*
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        android.support.v4.app.Fragment f = fragmentManager.findFragmentByTag(DETAIL_FRAGMENT_TAG);
+        if (f == null) {
+            throw new UnsupportedOperationException("Unable to load Main List fragment.");
+        } else if (f instanceof DetailFragment) {
+            mDetailFragment = (DetailFragment) f;
+            mDetailFragment.releasePlayer();
+        } else {
+            log("Invalid Main List Fragment.");
+        }
+        */
     }
 
     private void getCurrentRecipeStep() {
@@ -179,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         mDetailFragment.setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
         debug("addDetailFrag");
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.recipe_container, mDetailFragment)
+                .replace(R.id.recipe_container, mDetailFragment, DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -316,5 +339,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)
                 + "; Data: " + quickLogData());
+    }
+
+    public void playVideo(View view) {
+        String videoUrl = (String) view.getTag();
+        Toast.makeText(getApplicationContext(), videoUrl, Toast.LENGTH_LONG).show();
     }
 }

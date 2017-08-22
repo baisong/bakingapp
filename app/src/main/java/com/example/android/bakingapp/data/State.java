@@ -39,6 +39,7 @@ public class State {
     public final static String CURRENT_STEP_INDEX = "step";
     public final static String RECIPE_DATA = "data";
     public final static String IS_TWO_PANE = "twoPane";
+    public final static String IS_PLAYING = "isPlaying";
 
     /**
      * Enum representing your setting names or key for your setting.
@@ -54,6 +55,7 @@ public class State {
          */
         ACTIVE_RECIPE_INT,
         ACTIVE_STEP_INT,
+        IS_PLAYING,
         RECIPE_DATA_OBJ,
         IS_TWO_PANE
     }

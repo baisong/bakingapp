@@ -5,4 +5,6 @@
     <string name="action_next_step">Next</string>
     <string name="action_prev_step">Back</string>
     <string name="menu_recipe1">Recipe 1</string>
+    <string name="action_play_step_video">Play video</string>
+    <string name="step_divider">/</string>
 </resources>

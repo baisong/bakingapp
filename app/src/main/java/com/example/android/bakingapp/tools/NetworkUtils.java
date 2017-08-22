@@ -19,8 +19,38 @@ public final class NetworkUtils {
     private static final String LOG_TAG = NetworkUtils.class.getSimpleName();
     private static final String DATA_URL = "https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json";
 
+    private static final String[] mImageEndings = new String[]{
+            ".gif",
+            ".jpg",
+            ".jpeg",
+            ".png",
+            ".svg"
+    };
+
+    private static final String[] mVideoEndings = new String[]{
+            ".mp4",
+            ".flv",
+            ".f4v",
+            ".ogv",
+            ".avi"
+    };
+
+    public static boolean isImageFile(String urlString) {
+        return hasFileEnding(urlString, mImageEndings);
+    }
+
+    public static boolean isVideoFile(String urlString) {
+        return hasFileEnding(urlString, mVideoEndings);
+    }
+
+    private static boolean hasFileEnding(String urlString, String[] validEndings) {
+        for (String ending : validEndings) {
+            if (urlString.toLowerCase().endsWith(ending)) return true;
+        }
+        return false;
+    }
+
     /**
-     *
      * @return
      */
     public static URL buildUrl() {
@@ -29,7 +59,6 @@ public final class NetworkUtils {
     }
 
     /**
-     *
      * @param uri
      * @return
      */
@@ -44,7 +73,6 @@ public final class NetworkUtils {
     }
 
     /**
-     *
      * @param url
      * @return
      * @throws IOException
@@ -66,7 +94,6 @@ public final class NetworkUtils {
     }
 
     /**
-     *
      * @return
      */
     @Nullable
@@ -77,8 +104,7 @@ public final class NetworkUtils {
             RecipeRecordCollection collection = new RecipeRecordCollection(jsonString);
             Log.d(LOG_TAG, collection.getInfoString());
             return collection;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }

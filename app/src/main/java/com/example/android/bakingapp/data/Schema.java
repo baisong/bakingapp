@@ -37,4 +37,5 @@ public class Schema {
             STEP_VIDEO_URL,
             STEP_IMAGE_URL,
     };
+    public static final int STEP_VIDEO_URL_TAG_KEY = 1;
 }

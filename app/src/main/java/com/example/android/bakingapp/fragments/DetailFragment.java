@@ -2,6 +2,7 @@ package com.example.android.bakingapp.fragments;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,7 +19,20 @@ import android.widget.Toast;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.data.State;
+import com.example.android.bakingapp.tools.NetworkUtils;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.google.android.exoplayer2.DefaultLoadControl;
+import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
+import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelector;
+import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Util;
 import com.squareup.picasso.Picasso;
 
 import butterknife.BindView;
@@ -40,46 +54,27 @@ public class DetailFragment extends Fragment {
     private int mCurrentStep;
     private int mCurrentRecipe;
     private boolean mTwoPane;
+    private SimpleExoPlayer mExoPlayer;
+    private Uri mVideoUri;
 
-    @BindView(R.id.tv_step_title)
-    TextView mTitle;
-    @BindView(R.id.tv_video_url)
-    TextView mVideoURL;
-    @BindView(R.id.tv_step_body)
-    TextView mBody;
-    @BindView(R.id.iv_thumbnail)
-    ImageView mThumbnail;
-
-    @BindView(R.id.btn_prev_step)
-    Button mBackStep;
-    @BindView(R.id.btn_next_step)
-    Button mNextStep;
+    @BindView(R.id.tv_step_title) TextView mTitle;
+    @BindView(R.id.tv_step_body) TextView mBody;
+    @BindView(R.id.iv_thumbnail) ImageView mThumbnail;
+    @BindView(R.id.btn_prev_step) Button mBackStep;
+    @BindView(R.id.btn_next_step) Button mNextStep;
+    @BindView(R.id.tv_current_step) TextView mCurrentStepNum;
+    @BindView(R.id.tv_total_steps) TextView mTotalSteps;
+    @BindView(R.id.playerView) SimpleExoPlayerView mPlayerView;
 
     public DetailFragment() {
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        log("create 1.");
-        if (savedInstanceState != null) {
-            log("create 1. EXISTS");
-            /*
-            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
-            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
-            */
-        } else {
-            log("create 1. NULL");
-            // Data has been set in DetailActivity.createFragmentFromExplicitIntent
-        }
+        debug("onCreate");
 
-        log("NEW >>>"
-                + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
-
+        String initPlayer = "";
+        //initPlayer += (savedInstanceState == null) ? "1" : "0";
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, rootView);
 
@@ -99,15 +94,19 @@ public class DetailFragment extends Fragment {
         log("update 1.");
         if (mStep == null) {
             log("update 1. NULL");
+            //initPlayer = true;
+
         }
+        //initPlayer += (mStep == null) ? "|1" : "|0";
+        //initPlayer += (isPlaying()) ? "|1" : "|0";
+        //initPlayer += (mTwoPane) ? "|1" : "|0";
         log("update 2.");
         try {
             setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
             if (mStep == null) {
                 log("update 2. NULL");
             }
-        }
-        catch (UnsupportedOperationException e) {
+        } catch (UnsupportedOperationException e) {
             e.printStackTrace();
         }
         log("update 3.");
@@ -116,33 +115,23 @@ public class DetailFragment extends Fragment {
             log("update 3. NULL");
             return rootView;
         }
-        updateStepView();
+        updateStepView(initPlayer);
         return rootView;
     }
 
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        log("=== onViewCreated ===");
-
-        log("NEW >>>"
-                + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
+        debug("onViewCreated =======");
         if (savedInstanceState != null) {
             log("create 1. EXISTS");
             mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
             mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
             mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
             mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
-            log("NEW >>>"
-                    + " twoPane: " + String.valueOf(mTwoPane)
-                    + "; Step: " + String.valueOf(mCurrentRecipe)
-                    + "," + String.valueOf(mCurrentStep)
-                    + "; Data: " + quickLogData());
+            debug("onViewCreated w/ data");
         } else {
-            log("create 1. NULL");
+            log("onViewCreated no data");
             // Data has been set in DetailActivity.createFragmentFromExplicitIntent
         }
     }
@@ -238,7 +227,7 @@ public class DetailFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle currentState) {
         currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
-        currentState.putInt(CURRENT_STEP_INDEX,mCurrentStep);
+        currentState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
         currentState.putSerializable(RECIPE_DATA, mRecipeData);
         State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
         State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
@@ -260,7 +249,8 @@ public class DetailFragment extends Fragment {
             showToast("First step");
         } else {
             setCurrentStep(mCurrentStep - 1);
-            updateStepView();
+            releasePlayer("BACK");
+            updateStepView("BACK");
         }
     }
 
@@ -269,11 +259,14 @@ public class DetailFragment extends Fragment {
             showToast("Last step");
         } else {
             setCurrentStep(mCurrentStep + 1);
-            updateStepView();
+            releasePlayer("NEXT");
+            updateStepView("NEXT");
         }
     }
 
-    private void updateStepView() {
+    private void updateStepView(String initPlayer) {
+        debug("UBUBU [" + initPlayer + "]");
+        //debug("UBUBU [" + (initPlayer?"INIT":"SKIP") + "]");
         log("update 1.");
         if (mStep == null) {
             log("update 1. NULL");
@@ -281,24 +274,33 @@ public class DetailFragment extends Fragment {
         }
         log("update 2.");
         mStep = mSteps[mCurrentStep];
+        mCurrentStepNum.setText(String.valueOf(mCurrentStep + 1));
+        mTotalSteps.setText(String.valueOf(mSteps.length));
         //Log.d("BakingApp", mStep.toString());
         mTitle.setText(mStep.getAsString(Schema.STEP_TITLE));
         mBody.setText(mStep.getAsString(Schema.STEP_BODY));
         String videoUrl = mStep.getAsString(Schema.STEP_VIDEO_URL);
-        if (URLUtil.isValidUrl(videoUrl)) {
-            mVideoURL.setText(videoUrl);
-            mVideoURL.setVisibility(View.VISIBLE);
+        if (URLUtil.isValidUrl(videoUrl) && NetworkUtils.isVideoFile(videoUrl)) {
+            //mPlayVideoBtn.setTag(videoUrl);
+            //mPlayVideoBtn.setVisibility(View.VISIBLE);
+            mPlayerView.setVisibility(View.VISIBLE);
+            initializePlayer(Uri.parse(videoUrl));
         } else {
-            mVideoURL.setVisibility(View.GONE);
+            mPlayerView.setVisibility(View.GONE);
+            log("Found bad video: " + videoUrl);
         }
         String imageUrl = mStep.getAsString(Schema.STEP_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
-            log("Picasso loading... " + imageUrl);
-            mThumbnail.setVisibility(View.VISIBLE);
-            Picasso.with(mContext)
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
-                    .into(mThumbnail);
+            if (NetworkUtils.isImageFile(imageUrl)) {
+                log("Picasso loading... " + imageUrl);
+                mThumbnail.setVisibility(View.VISIBLE);
+                Picasso.with(mContext)
+                        .load(imageUrl)
+                        .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
+                        .into(mThumbnail);
+            } else {
+                Log.w("BakingApp", "Found non-image file in thumbnail field: " + imageUrl);
+            }
         } else {
             mThumbnail.setVisibility(View.GONE);
         }
@@ -307,10 +309,100 @@ public class DetailFragment extends Fragment {
     private void log(String message) {
         Log.d(LOG_TAG, message);
     }
+
+    private void debug(String note) {
+        log(note + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + quickLogData());
+    }
+
     private String quickLogData() {
         if (mRecipeData == null) {
             return "0";
         }
         return String.valueOf(mRecipeData.getCount());
+    }
+
+    public void initializePlayer(Uri videoUri) {
+        if (isPlaying()) {
+            log("[  UBUBU  ]                  Attempted to restart! Abort.");
+            releasePlayer("init");
+        }
+        else {
+            log("[  UBUBU  ]                  Initialize...");
+        }
+        mVideoUri = videoUri;
+        if (mExoPlayer == null) {
+            // Create an instance of the ExoPlayer.
+            TrackSelector trackSelector = new DefaultTrackSelector();
+            LoadControl loadControl = new DefaultLoadControl();
+            mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
+            mPlayerView.setPlayer(mExoPlayer);
+        }
+        String userAgent = Util.getUserAgent(getContext(), "BakingApp");
+        MediaSource mediaSource = new ExtractorMediaSource(mVideoUri,
+                new DefaultDataSourceFactory(getContext(), userAgent),
+                new DefaultExtractorsFactory(),
+                null,
+                null
+        );
+        mExoPlayer.prepare(mediaSource);
+        mExoPlayer.setPlayWhenReady(true);
+        setPlayerState(true);
+        log("mExoPlayer initialized with " + String.valueOf(mVideoUri));
+    }
+
+    boolean isPlaying() {
+        return State.getInstance(getContext()).getBoolean(State.Key.IS_PLAYING);
+    }
+
+    /**
+     * Release ExoPlayer.
+     */
+    public void releasePlayer() {
+        if (mExoPlayer != null) {
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
+    }
+
+    /**
+     * Release ExoPlayer.
+     */
+    public void releasePlayer(String logMessage) {
+        log(logMessage + " - mExoPlayer destroyed.");
+        setPlayerState(false);
+        if (mExoPlayer != null) {
+            mExoPlayer.stop();
+            mExoPlayer.release();
+            mExoPlayer = null;
+        }
+    }
+
+    private void setPlayerState(boolean newValue) {
+        boolean oldValue = State.getInstance(getContext()).getBoolean(State.Key.IS_PLAYING);
+        String oldState = oldValue ? "ON" : "OFF";
+        String newState = newValue ? "ON" : "OFF";
+        boolean changed = (oldValue != newValue);
+        String switchState = (changed) ? (newValue ? " <<< " : " >>> ") : " --- ";
+        State.getInstance().put(State.Key.IS_PLAYING, newValue);
+        log("[  UBUBU  ] " + switchState + oldState + (changed ? (" -> " + newState) : "        "));
+    }
+
+    /*
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        releasePlayer("onDestroy");
+    }
+    */
+
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        releasePlayer("onPause");
     }
 }
