@@ -3,15 +3,17 @@ package com.example.android.bakingapp;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 import com.example.android.bakingapp.activities.WidgetActivity;
-import com.example.android.bakingapp.adapters.ShoppingListAdapter;
 import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.tools.NetworkUtils;
 import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.tools.WidgetListService;
 
 /**
  * Implementation of App Widget functionality.
@@ -19,7 +21,6 @@ import com.example.android.bakingapp.tools.RecipeRecordCollection;
  */
 public class RecipeWidgetProvider extends AppWidgetProvider {
 
-    private ShoppingListAdapter mAdapter;
     private int mRecipeId;
     private Context mContext;
     private RemoteViews mViews;
@@ -28,18 +29,15 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
     public static void updateAppWidget(Context context, AppWidgetManager appWidgetManager,
                                 int appWidgetId) {
         //mContext = context;
-        int recipeId = WidgetActivity.loadRecipePref(context, appWidgetId);
-        // Construct the RemoteViews object
-        RecipeRecordCollection collection = NetworkUtils.fetch();
-        String recipeName = collection.getRecipe(recipeId).getAsString(Schema.RECIPE_NAME);
-        //ContentValues[] ingredients;
-        mPackageName = context.getPackageName();
-        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_widget_provider);
 
-        views.setTextViewText(R.id.appwidget_recipe_name, recipeName);
-        new FetchRecipesTask(views).execute(recipeId);
+        // Construct the RemoteViews object
+        //ContentValues[] ingredients;
+        //mPackageName = context.getPackageName();
         // Instruct the widget manager to update the widget
-        appWidgetManager.updateAppWidget(appWidgetId, views);
+        RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_widget_provider);
+        views.setTextViewText(R.id.appwidget_recipe_name, "No recipe selected.");
+        appWidgetManager.updateAppWidget(appWidgetId,  views);
+        new FetchRecipesTask(context, appWidgetManager, appWidgetId).execute();
     }
 
     @Override
@@ -68,25 +66,38 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
         // Enter relevant functionality for when the last widget is disabled
     }
 
-    public static class FetchRecipesTask extends AsyncTask<Integer, Void, RecipeRecordCollection> {
+    public static class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
+
+        private Context mContext;
+        private AppWidgetManager mManager;
+        private int mAppWidgetId;
+        // Derived/instantiated from initial variables.
+        private int mRecipeId;
         private RemoteViews mViews;
-        public FetchRecipesTask(RemoteViews views) {
-            mViews = views;
+
+        public FetchRecipesTask(Context context, AppWidgetManager manager, int appWidgetId) {
+            mContext = context;
+            mManager = manager;
+            mAppWidgetId = appWidgetId;
+            mViews = new RemoteViews(mContext.getPackageName(), R.layout.recipe_widget_provider);
+            mRecipeId = WidgetActivity.loadRecipePref(context, appWidgetId);
+            String recipeName = "Recipe ID " + mRecipeId + " is not valid.";
+            if (Schema.validRecipe(mRecipeId)) {
+                recipeName = "Loading recipe " + String.valueOf(mRecipeId) + "...";
+            }
+            mViews.setTextViewText(R.id.appwidget_recipe_name, recipeName);
         }
 
         @Override
-        protected RecipeRecordCollection doInBackground(Integer... ints) {
-            int recipeId = ints[0];
-            if (recipeId >= 0 && recipeId <= 3) {
-                Log.d("BakingApp", "Fetch widget LOAD: " + String.valueOf(recipeId));
+        protected RecipeRecordCollection doInBackground(Void... voids) {
+            if (Schema.validRecipe(mRecipeId)) {
+                Log.d("BakingApp", "Fetch widget LOAD: " + String.valueOf(mRecipeId));
                 RecipeRecordCollection collection = NetworkUtils.fetch();
-                RemoteViews views = new RemoteViews(mPackageName, R.layout.recipe_widget_provider);
-                views.setTextViewText(R.id.appwidget_recipe_name, collection.getRecipe(recipeId).getAsString(Schema.RECIPE_NAME));
                 //ContentValues[] ingredients = collection.getIngredients(recipeId);
                 return collection;
             }
             else {
-                Log.d("BakingApp", "Fetch widget SKIP: " + String.valueOf(recipeId));
+                Log.d("BakingApp", "Fetch widget SKIP: " + String.valueOf(mRecipeId));
             }
             return null;
         }
@@ -104,10 +115,18 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
          */
         @Override
         protected void onPostExecute(RecipeRecordCollection collection) {
-            // @TODO
-            mViews.setTextViewText();
             if (collection != null) {
-                updateShoppingList(collection);
+                String recipeName = collection.getRecipe(mRecipeId).getAsString(Schema.RECIPE_NAME);
+                mViews.setTextViewText(R.id.appwidget_recipe_name, recipeName);
+
+                // @TODO Simplify this code that calls the remote list factory thing.
+                // https://developer.android.com/guide/topics/appwidgets/index.html#collections
+                Intent intent = new Intent(mContext, WidgetListService.class);
+                intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+                intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+                mViews.setRemoteAdapter(R.id.lv_shopping_list, intent);
+
+                mManager.updateAppWidget(mAppWidgetId, mViews);
             } else {
                 showErrorMessage();
             }
@@ -116,7 +135,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
 
     private static void updateShoppingList(RecipeRecordCollection collection) {
         Log.d("BakingApp", "Update shopping list with data.");
-        RemoteViews views = new RemoteViews(mPackageName, R.layout.recipe_widget_provider);
+        //RemoteViews views = new RemoteViews(mPackageName, R.layout.recipe_widget_provider);
         //int recipeId = WidgetActivity.loadRecipePref(context, appWidgetId);
         //views.setTextViewText(R.id.appwidget_recipe_name, collection.getRecipe());
 
