@@ -267,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         //log("Updated to: " + mRecipeData.getInfoString());
     }
 
-    public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
+    private class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
 
         @Override
         protected RecipeRecordCollection doInBackground(Void... voids) {

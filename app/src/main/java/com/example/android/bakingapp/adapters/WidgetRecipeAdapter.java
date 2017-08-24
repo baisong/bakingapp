@@ -2,7 +2,6 @@ package com.example.android.bakingapp.adapters;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,25 +13,32 @@ import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
 import com.squareup.picasso.Picasso;
 
-public class RecipeListAdapter extends BaseAdapter {
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class WidgetRecipeAdapter extends BaseAdapter {
 
     private Context mContext;
-    //private List<String> mRecipeNames;
-    private RecipeRecordCollection mRecipeData;
+    private ContentValues[] mItems;
     private LayoutInflater mInflater;
 
-    public RecipeListAdapter(Context context, RecipeRecordCollection data) {
+    @BindView(R.id.tv_recipe_name)
+    TextView mName;
+    @BindView(R.id.iv_recipe_pic)
+    ImageView mPic;
+
+    public WidgetRecipeAdapter(Context context, ContentValues[] items) {
         mContext = context;
-        mRecipeData = data;
+        mItems = items;
         mInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
     @Override
     public int getCount() {
-        return mRecipeData.getCount();
+        if (mItems == null) return 0;
+        return mItems.length;
     }
 
     @Override
@@ -45,21 +51,24 @@ public class RecipeListAdapter extends BaseAdapter {
         return 0;
     }
 
-    public View getView(final int position, View convertView, ViewGroup parent) {
-        LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.item_recipe, null);
-        TextView recipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
-        ImageView recipePic = (ImageView) rootView.findViewById(R.id.iv_recipe_pic);
+    public void setItems(ContentValues[] items) {
+        mItems = items;
+        this.notifyDataSetChanged();
+    }
 
-        ContentValues recipe = mRecipeData.getRecipe(position);
-        Log.d("BakingApp", "Loading card...");
-        Log.d("BakingApp", recipe.toString());
-        recipeName.setText(recipe.getAsString(Schema.RECIPE_NAME));
+    public View getView(final int position, View convertView, ViewGroup parent) {
+        View rootView = (LinearLayout) mInflater.inflate(R.layout.item_recipe, parent, false);
+        ButterKnife.bind(this, rootView);
+        mName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
+        mPic = (ImageView) rootView.findViewById(R.id.iv_recipe_pic);
+        ContentValues recipe = mItems[position];
+        mName.setText(recipe.getAsString(Schema.RECIPE_NAME));
         String imageUrl = recipe.getAsString(Schema.RECIPE_IMAGE_URL);
         if (URLUtil.isValidUrl(imageUrl)) {
             Picasso.with(rootView.getContext())
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
-                    .into(recipePic);
+                    .into(mPic);
         }
         return rootView;
     }

@@ -248,10 +248,32 @@ public class RecipeRecordCollection implements Serializable {
 
     public List<String> getRecipeNames() {
         List<String> recipeNames = new ArrayList<>();
-        for (int i = 0; i < recipes.length; i++) {
-            recipeNames.add(recipes[i].getAsString(RECIPE_NAME));
+        for (ContentValues recipe : recipes) {
+            recipeNames.add(recipe.getAsString(RECIPE_NAME));
         }
 
         return recipeNames;
     }
+
+    public ContentValues[] getRecipes() {
+        return recipes;
+    }
+
+    /*
+    public CharSequence[] getNamesAsListPreferenceEntries() {
+        CharSequence[] entries = new CharSequence[recipes.length];
+        for (int i = 0; i < recipes.length; i++) {
+            entries[i] = recipes[i].getAsString(RECIPE_NAME);
+        }
+        return entries;
+    }
+
+    public int[] getNamesAsListPreferenceValues() {
+        int[] values = new int[recipes.length];
+        for (int i = 0; i < recipes.length; i++) {
+            values[i] = i;
+        }
+        return values;
+    }
+    */
 }

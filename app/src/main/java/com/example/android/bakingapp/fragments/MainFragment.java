@@ -118,7 +118,7 @@ public class MainFragment extends Fragment {
         mStepsList.setAdapter(mStepRecyclerAdapter);
 
         /*
-        mStepAdapter = new StepAdapter(getContext(), new ContentValues[]{});
+        mStepAdapter = new WidgetRecipeAdapter(getContext(), new ContentValues[]{});
         mStepsList.setScrollContainer(false);
         mStepsList.setAdapter(mStepAdapter);
         */

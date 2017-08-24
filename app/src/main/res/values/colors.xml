@@ -6,7 +6,7 @@
     <color name="colorPrimaryInverse">#fce4ec</color>
     <color name="colorPrimaryInverseLight">#ffffff</color>
     <color name="colorPrimaryInverseDark">#c9b2ba</color>
-
+    <color name="colorError">#ffcc0000</color>
     <color name="colorAccent">@color/colorSecondary</color>
 
     <color name="colorSecondary">#00c853</color>

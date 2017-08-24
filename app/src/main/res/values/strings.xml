@@ -8,6 +8,9 @@
     <string name="action_play_step_video">Play video</string>
     <string name="step_divider">/</string>
     <string name="appwidget_text">RECIPE</string>
-    <string name="configure">Configure</string>
-    <string name="add_widget">Add widget</string>
+    <string name="appwidget_recipe_title">Recipe</string>
+    <string name="configure">Choose a recipe for a home screen shopping list.</string>
+    <string name="add_widget">Save</string>
+    <string name="appwidget_error_loading">Could not load recipes. Please try again.</string>
+    <string name="appwidget_configure_title">Ready to shop?</string>
 </resources>
