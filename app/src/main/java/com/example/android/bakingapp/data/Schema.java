@@ -40,7 +40,10 @@ public class Schema {
     public static final int STEP_VIDEO_URL_TAG_KEY = 1;
     public static final int MAX_RECIPE_ID = 3;
     public static final int MIN_RECIPE_ID = 0;
-    public static boolean validRecipe(int recipeId) {
+    public static boolean isValidRecipe(int recipeId) {
         return (recipeId <= MAX_RECIPE_ID && recipeId >= MIN_RECIPE_ID);
     }
+    public static final String INGREDIENTS_EXTRA_KEY = "ingredients";
+    public static final String INGREDIENTS_EXTRA_SEPARATOR = "</ingredient><ingredient>";
+    public static final String INGREDIENT_PART_SEPARATOR = " ";
 }

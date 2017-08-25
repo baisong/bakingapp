@@ -13,4 +13,6 @@
     <string name="add_widget">Save</string>
     <string name="appwidget_error_loading">Could not load recipes. Please try again.</string>
     <string name="appwidget_configure_title">Ready to shop?</string>
+    <string name="shopping_list_default">Shopping list item</string>
+    <string name="appwidget_ingredient_count_null">Loading...</string>
 </resources>
