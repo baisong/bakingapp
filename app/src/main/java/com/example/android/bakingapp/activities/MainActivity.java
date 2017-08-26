@@ -17,27 +17,25 @@ import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.data.RecipeData;
 
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity implements MainFragment.OnStepClickListener
-        //, LoaderCallbacks<RecipeRecordCollection>
-{
+public class MainActivity extends AppCompatActivity implements MainFragment.OnStepClickListener {
 
     private boolean mTwoPane;
     private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
-    private RecipeRecordCollection mRecipeData;
+    private RecipeData mRecipeData;
 
     private int mCurrentRecipe;
     private int mCurrentStep;
     private String DETAIL_FRAGMENT_TAG = "DetailFrag";
 
-    private static final String LOG_TAG = "BakingApp [MAI]{Acty}";
+    private final String LOG_TAG = "BakingApp [MAI]{Acty}";
 
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
@@ -51,24 +49,30 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         if (savedInstanceState != null) {
             getCurrentRecipeStep();
             if(savedInstanceState.containsKey(State.RECIPE_DATA)) {
-                mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(State.RECIPE_DATA);
+                mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
             }
         }
         else {
             log("INIT NO PLAYER");
             State.getInstance(getApplicationContext()).put(State.Key.IS_PLAYING, false);
         }
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            boolean isLaunchedFromDetail = extras.getBoolean(State.LAUNCHED_FROM_DETAIL);
+            if (isLaunchedFromDetail) {
+                mCurrentRecipe = extras.getInt(State.CURRENT_RECIPE_INDEX);
+                mCurrentStep = extras.getInt(State.CURRENT_STEP_INDEX);
+                debug("SUCCESS" + String.valueOf(extras.getInt(State.CURRENT_STEP_INDEX)));
+            }
+        }
+
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
             releaseFragmentPlayer();
             debug("TwoPane!");
-            //if (dataLoaded() || savedInstanceState == null) {
-            //addDetailFragment();
-            //}
         } else {
             mTwoPane = false;
         }
-
 
         if (dataLoaded()) {
             loadMainFragmentRecipe();
@@ -86,18 +90,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             log("EUREKA!!!");
             mDetailFragment.releasePlayer("From Main");
         }
-        /*
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        android.support.v4.app.Fragment f = fragmentManager.findFragmentByTag(DETAIL_FRAGMENT_TAG);
-        if (f == null) {
-            throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        } else if (f instanceof DetailFragment) {
-            mDetailFragment = (DetailFragment) f;
-            mDetailFragment.releasePlayer();
-        } else {
-            log("Invalid Main List Fragment.");
-        }
-        */
     }
 
     private void getCurrentRecipeStep() {
@@ -127,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         debug("onRestore BEG");
         super.onRestoreInstanceState(savedInstanceState);
         if (savedInstanceState.containsKey(State.RECIPE_DATA)) {
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(State.RECIPE_DATA);
+            mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
             log("onRestore WITH DATA FROM INSTANCE");
         } else {
             log("onRestore NO DATA FROM INSTANCE");
@@ -141,10 +133,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mTwoPane = true;
             if (!savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
                 log("New orientation!!! Now horizontal");
-                //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
                 addDetailFragment();
-                // ???
-                // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
             }
             else {
                 log("Restore but no rotate - still horizontal");
@@ -153,10 +142,6 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mTwoPane = false;
             if (savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
                 log("New orientation!!! Now vertical");
-                //log("IN STATE: " + String.valueOf(mRecipeData.getInfoString()));
-                //addDetailFragment();
-                // ???
-                // https://stackoverflow.com/questions/15313598/once-for-all-how-to-correctly-save-instance-state-of-fragments-in-back-stack
             }
             else {
                 log("Restore but no rotate - still vertical");
@@ -202,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         mDetailFragment.setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
         debug("addDetailFrag");
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.recipe_container, mDetailFragment, DETAIL_FRAGMENT_TAG)
+                .replace(R.id.detail_fragment_container, mDetailFragment, DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 
@@ -245,7 +230,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             newFragment.setCurrentStep(recipe, step);
             newFragment.refreshSteps();
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.recipe_container, newFragment)
+                    .replace(R.id.detail_fragment_container, newFragment)
                     .commit();
         } else {
             final Intent intent = new Intent(this, DetailActivity.class);
@@ -258,20 +243,18 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
-    private void updateRecipeData(RecipeRecordCollection collection) {
-        //log("Update recipe data with: " + collection.getInfoString());
+    private void updateRecipeData(RecipeData collection) {
         mRecipeData = collection;
         if (mDetailFragment != null) {
             mDetailFragment.setRecipeData(mRecipeData);
         }
-        //log("Updated to: " + mRecipeData.getInfoString());
     }
 
-    private class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
+    private class FetchRecipesTask extends AsyncTask<Void, Void, RecipeData> {
 
         @Override
-        protected RecipeRecordCollection doInBackground(Void... voids) {
-            RecipeRecordCollection collection = NetworkUtils.fetch();
+        protected RecipeData doInBackground(Void... voids) {
+            RecipeData collection = NetworkUtils.fetch();
             updateRecipeData(collection);
             return collection;
         }
@@ -289,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
          * Handles updating the UI depending on the result of the background task.
          */
         @Override
-        protected void onPostExecute(RecipeRecordCollection collection) {
+        protected void onPostExecute(RecipeData collection) {
             mLoadingIndicator.setVisibility(View.GONE);
             if (collection != null) {
                 updateRecipeData(collection);
@@ -333,16 +316,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         return super.onOptionsItemSelected(item);
     }
 
-
     private void debug(String note) {
         log(note + " twoPane: " + String.valueOf(mTwoPane)
                 + "; Step: " + String.valueOf(mCurrentRecipe)
                 + "," + String.valueOf(mCurrentStep)
                 + "; Data: " + quickLogData());
-    }
-
-    public void playVideo(View view) {
-        String videoUrl = (String) view.getTag();
-        Toast.makeText(getApplicationContext(), videoUrl, Toast.LENGTH_LONG).show();
     }
 }

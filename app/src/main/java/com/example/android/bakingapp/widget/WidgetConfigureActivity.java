@@ -1,4 +1,4 @@
-package com.example.android.bakingapp.activities;
+package com.example.android.bakingapp.widget;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetManager;
@@ -16,21 +16,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.bakingapp.R;
-import com.example.android.bakingapp.RecipeWidgetProvider;
 import com.example.android.bakingapp.adapters.WidgetRecipeAdapter;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.data.RecipeData;
 
 /**
  * The configuration screen for the {@link RecipeWidgetProvider RecipeWidgetProvider} AppWidget.
  */
-public class WidgetActivity extends Activity {
+public class WidgetConfigureActivity extends Activity {
 
-    private static final String PREFS_NAME = "com.example.android.bakingapp.RecipeWidgetProvider";
+    private static final String PREFS_NAME = "com.example.android.bakingapp.widget.RecipeWidgetProvider";
     private static final String PREF_PREFIX_KEY = "appwidget_";
     int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
     private static final int DEFAULT_NO_SELECTION = -1;
-    private RecipeRecordCollection mRecipeData;
+    private RecipeData mRecipeData;
 
     ProgressBar mLoadingIndicator;
     ListView mRecipeList;
@@ -43,7 +42,7 @@ public class WidgetActivity extends Activity {
             //Object listItem = mRecipeList.getItemAtPosition(position);
             //int recipeId = position;//mRecipeList.getText().toString();
             Log.d("BakingApp", "Clicked widget position " + String.valueOf(position));
-            final Context context = WidgetActivity.this;
+            final Context context = WidgetConfigureActivity.this;
             saveRecipeIdPref(context, mAppWidgetId, position);
 
             // It is the responsibility of the configuration activity to update the app widget
@@ -58,7 +57,7 @@ public class WidgetActivity extends Activity {
         }
     };
 
-    public WidgetActivity() {
+    public WidgetConfigureActivity() {
         super();
     }
 
@@ -113,14 +112,14 @@ public class WidgetActivity extends Activity {
 
         //Toast.makeText(getApplicationContext(), "Loading recipes...", Toast.LENGTH_LONG).show();
         new FetchRecipesTask().execute();
-        //mRecipeList.setText(loadRecipePref(WidgetActivity.this, mAppWidgetId));
+        //mRecipeList.setText(loadRecipePref(WidgetConfigureActivity.this, mAppWidgetId));
     }
 
-    public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
+    public class FetchRecipesTask extends AsyncTask<Void, Void, RecipeData> {
 
         @Override
-        protected RecipeRecordCollection doInBackground(Void... voids) {
-            RecipeRecordCollection collection = NetworkUtils.fetch();
+        protected RecipeData doInBackground(Void... voids) {
+            RecipeData collection = NetworkUtils.fetch();
             updateRecipeData(collection);
             return collection;
         }
@@ -138,7 +137,7 @@ public class WidgetActivity extends Activity {
          * Handles updating the UI depending on the result of the background task.
          */
         @Override
-        protected void onPostExecute(RecipeRecordCollection collection) {
+        protected void onPostExecute(RecipeData collection) {
             mLoadingIndicator.setVisibility(View.GONE);
             mRecipeData = collection;
             if (collection != null) {
@@ -149,7 +148,7 @@ public class WidgetActivity extends Activity {
         }
     }
 
-    private void updateRecipeData(RecipeRecordCollection collection) {
+    private void updateRecipeData(RecipeData collection) {
         //mRecipeList.setAdapter(new WidgetRecipeAdapter(this, collection.getRecipes()));
         mAdapter.setItems(collection.getRecipes());
         mRecipeList.setOnItemClickListener(mOnItemClickListener);

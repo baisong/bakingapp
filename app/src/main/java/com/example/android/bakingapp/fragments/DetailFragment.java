@@ -20,7 +20,7 @@ import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.data.RecipeData;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -50,7 +50,7 @@ public class DetailFragment extends Fragment {
     private ContentValues[] mSteps;
     private ContentValues mStep;
     private Context mContext;
-    private RecipeRecordCollection mRecipeData;
+    private RecipeData mRecipeData;
     private int mCurrentStep;
     private int mCurrentRecipe;
     private boolean mTwoPane;
@@ -71,8 +71,8 @@ public class DetailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        getCurrentRecipeStep();
         debug("onCreate");
-
         String initPlayer = "";
         //initPlayer += (savedInstanceState == null) ? "1" : "0";
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
@@ -94,12 +94,7 @@ public class DetailFragment extends Fragment {
         log("update 1.");
         if (mStep == null) {
             log("update 1. NULL");
-            //initPlayer = true;
-
         }
-        //initPlayer += (mStep == null) ? "|1" : "|0";
-        //initPlayer += (isPlaying()) ? "|1" : "|0";
-        //initPlayer += (mTwoPane) ? "|1" : "|0";
         log("update 2.");
         try {
             setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
@@ -125,59 +120,33 @@ public class DetailFragment extends Fragment {
         debug("onViewCreated =======");
         if (savedInstanceState != null) {
             log("create 1. EXISTS");
-            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
+            //mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
+            //mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
+            setCurrentStep(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
+            mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
             mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
             debug("onViewCreated w/ data");
         } else {
             log("onViewCreated no data");
-            // Data has been set in DetailActivity.createFragmentFromExplicitIntent
         }
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        //Log.d("BakingApp", mRecipeData.getInfoString());
         super.onActivityCreated(savedInstanceState);
-
-        /*
-        ContentValues[] ingredients = mRecipeData.getIngredients(mCurrentRecipe);
-        mIngredientAdapter.setIngredientsData(ingredients);
-        Log.d("BakingApp", String.valueOf(ingredients.length) + " ingredients.");
-        mStepRecyclerAdapter.setStepsData(mRecipeData.getSteps(mCurrentRecipe));
-
-        ContentValues recipe = mRecipeData.getRecipe(mCurrentRecipe);
-        mRecipeName.setText(recipe.getAsString(Schema.RECIPE_NAME));
-        String imageUrl = recipe.getAsString(Schema.RECIPE_IMAGE_URL);
-        if (URLUtil.isValidUrl(imageUrl)) {
-            Picasso.with(getContext())
-                    .load(imageUrl)
-                    .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
-                    .into(mImage);
-        }*/
-        /** Cycles through steps
-         mRecipeName.setOnClickListener(new View.OnClickListener() {
-        @Override public void onClick(View view) {
-        if (mCurrentRecipe < mRecipeNames.size() - 1) {
-        mCurrentRecipe++;
-        } else {
-        mCurrentRecipe = 0;
-        }
-        mRecipeName.setText(mRecipeNames.get(mCurrentRecipe));
-        }
-        });
-         **/
     }
 
-    public void setRecipeData(RecipeRecordCollection data) {
+    public void setRecipeData(RecipeData data) {
         mRecipeData = data;
     }
 
     public void setCurrentStep(int recipe, int step) {
-        boolean newRecipe = recipe != mCurrentRecipe;
+        boolean newRecipe = (recipe != mCurrentRecipe);
         mCurrentRecipe = recipe;
         mCurrentStep = step;
+        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        Log.d("BakingApp [DET]{Acty}", "CURRENT RECIPE ABOUT FRAG: " + String.valueOf(mCurrentStep));
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
         if (newRecipe && mRecipeData != null && mRecipeData.getCount() > 0) {
             refreshSteps();
         }
@@ -195,7 +164,7 @@ public class DetailFragment extends Fragment {
         return mStep;
     }
 
-    public void setStep(RecipeRecordCollection data, int recipe, int step) {
+    public void setStep(RecipeData data, int recipe, int step) {
         if (data == null) {
             throw new UnsupportedOperationException("Recipe data is null.");
         }
@@ -391,17 +360,21 @@ public class DetailFragment extends Fragment {
         log("[  UBUBU  ] " + switchState + oldState + (changed ? (" -> " + newState) : "        "));
     }
 
-    /*
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        releasePlayer("onDestroy");
-    }
-    */
-
     @Override
     public void onPause() {
         super.onPause();
         releasePlayer("onPause");
+    }
+
+    private void getCurrentRecipeStep() {
+        //mCurrentRecipe = 0;
+        //mCurrentStep = 0;
+        try {
+            mCurrentRecipe = State.getInstance(getContext()).getInt(State.Key.ACTIVE_RECIPE_INT);
+            mCurrentStep = State.getInstance().getInt(State.Key.ACTIVE_STEP_INT);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

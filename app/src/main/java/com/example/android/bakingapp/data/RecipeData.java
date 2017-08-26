@@ -1,4 +1,4 @@
-package com.example.android.bakingapp.tools;
+package com.example.android.bakingapp.data;
 
 import android.content.ContentValues;
 
@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.example.android.bakingapp.data.Schema.RECIPE_NAME;
 
-public class RecipeRecordCollection implements Serializable {
+public class RecipeData implements Serializable {
     String mRawJson;
     private static ContentValues[] recipes;
     private static ContentValues[][] ingredients;
@@ -40,7 +40,7 @@ public class RecipeRecordCollection implements Serializable {
         return null;
     }
 
-    public RecipeRecordCollection(String json) {
+    public RecipeData(String json) {
         loadFromJson(json);
     }
 

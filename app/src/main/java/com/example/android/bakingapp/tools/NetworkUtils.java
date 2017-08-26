@@ -4,6 +4,8 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
+import com.example.android.bakingapp.data.RecipeData;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -97,11 +99,11 @@ public final class NetworkUtils {
      * @return
      */
     @Nullable
-    public static RecipeRecordCollection fetch() {
+    public static RecipeData fetch() {
         URL movieQueryUrl = buildUrl();
         try {
             String jsonString = getResponseFromHttpUrl(movieQueryUrl);
-            RecipeRecordCollection collection = new RecipeRecordCollection(jsonString);
+            RecipeData collection = new RecipeData(jsonString);
             Log.d(LOG_TAG, collection.getInfoString());
             return collection;
         } catch (IOException e) {

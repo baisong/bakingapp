@@ -1,7 +1,6 @@
 package com.example.android.bakingapp.activities;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
@@ -10,54 +9,102 @@ import android.util.Log;
 import android.view.Display;
 
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.data.RecipeData;
 import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.fragments.DetailFragment;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
-import com.google.android.exoplayer2.SimpleExoPlayer;
 
 import static com.example.android.bakingapp.data.State.CURRENT_RECIPE_INDEX;
 import static com.example.android.bakingapp.data.State.CURRENT_STEP_INDEX;
 import static com.example.android.bakingapp.data.State.IS_TWO_PANE;
 import static com.example.android.bakingapp.data.State.RECIPE_DATA;
 
+/**
+ * Displays the current step in either full screen, or as right-hand panel on larger displays.
+ * <p>
+ * Launched only from MainActivity, either via explicit intent on smaller displays, or via fragment
+ * manager transaction on larger displays.
+ */
 public class DetailActivity extends AppCompatActivity {
 
+    private static final float WIDESCREEN_MIN_WIDTH_IN_DP = 600;
     private int mCurrentRecipe;
     private int mCurrentStep;
     private boolean mTwoPane;
-    private RecipeRecordCollection mRecipeData;
-    private SimpleExoPlayer mExoPlayer;
-    private DetailFragment mDetailFragment;
+    private RecipeData mRecipeData;
 
-    private static final String LOG_TAG = "BakingApp [DET]{Acty}";
-
+    /**
+     * Load data into member variables and replace the detail fragment with data received.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        log("onCreate");
         super.onCreate(savedInstanceState);
         launchMainIfWidescreen();
         setContentView(R.layout.activity_recipe);
         if (savedInstanceState == null) {
             loadDataFromExplicitIntent();
-        }
-        else {
+        } else {
             loadDataFromInstanceState(savedInstanceState);
         }
         addDetailFragment();
     }
 
-    private void launchMainIfWidescreen() {
-        if (getWidthInDp() >= 600) {
-            final Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
-            intent.putExtra(State.CURRENT_STEP_INDEX, mCurrentStep);
-            Bundle bundle = new Bundle();
-            bundle.putSerializable(State.RECIPE_DATA, mRecipeData);
-            intent.putExtras(bundle);
-            startActivity(intent);
+    /**
+     * Persist data after screen rotate, etc.
+     *
+     * @param savedInstanceState
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(RECIPE_DATA)) {
+            mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
+            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
+            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
+            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
         }
     }
 
+    /**
+     * Store data in advance of screen rotate, etc.
+     *
+     * @param outState
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean(IS_TWO_PANE, mTwoPane);
+        outState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        outState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
+        outState.putSerializable(RECIPE_DATA, mRecipeData);
+        super.onSaveInstanceState(outState);
+    }
+
+    /**
+     * Launch MainActivity with side panel DetailActivity if device is widescreen.
+     */
+    private void launchMainIfWidescreen() {
+        if (getWidthInDp() < WIDESCREEN_MIN_WIDTH_IN_DP) {
+            return;
+        }
+        final Intent intent = new Intent(this, MainActivity.class);
+        //intent.putExtra(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        //intent.putExtra(State.CURRENT_STEP_INDEX, mCurrentStep);
+        State.getInstance(getApplicationContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        Log.d("BakingApp [DET]{Acty}", "CURRENT RECIPE ABOUT THING: " + String.valueOf(mCurrentStep));
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        //intent.putExtra(State.LAUNCHED_FROM_DETAIL, true);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable(State.RECIPE_DATA, mRecipeData);
+        intent.putExtras(bundle);
+        startActivity(intent);
+    }
+
+    /**
+     * Utility function to determine device display metrics.
+     *
+     * @return
+     */
     private float getWidthInDp() {
         Display display = getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -66,23 +113,28 @@ public class DetailActivity extends AppCompatActivity {
         return outMetrics.widthPixels / getResources().getDisplayMetrics().density;
     }
 
+    /**
+     * Utility function to assign private member variables from intent.
+     */
     private void loadDataFromExplicitIntent() {
-        log("data from explicit intent");
         mCurrentRecipe = getIntent().getIntExtra(CURRENT_RECIPE_INDEX, 0);
         mCurrentStep = getIntent().getIntExtra(CURRENT_STEP_INDEX, 0);
-        mRecipeData = (RecipeRecordCollection) getIntent().getSerializableExtra(RECIPE_DATA);
-        debug("loadDataFromIntent");
+        mRecipeData = (RecipeData) getIntent().getSerializableExtra(RECIPE_DATA);
     }
 
+    /**
+     * Utility function to assign private member variables from instance state bundle.
+     */
     private void loadDataFromInstanceState(Bundle instanceState) {
-        log("data from instance state");
         mCurrentRecipe = instanceState.getInt(CURRENT_RECIPE_INDEX, 0);
         mCurrentStep = instanceState.getInt(CURRENT_STEP_INDEX, 0);
-        mRecipeData = (RecipeRecordCollection) instanceState.getSerializable(RECIPE_DATA);
+        mRecipeData = (RecipeData) instanceState.getSerializable(RECIPE_DATA);
         mTwoPane = instanceState.getBoolean(IS_TWO_PANE);
-        debug("loadDataFromState");
     }
 
+    /**
+     * Replace the detail fragment with up-to-date recipe data.
+     */
     private void addDetailFragment() {
         DetailFragment fragment = new DetailFragment();
         fragment.setRecipeData(mRecipeData);
@@ -91,95 +143,8 @@ public class DetailActivity extends AppCompatActivity {
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.recipe_container, fragment)
+                .replace(R.id.detail_fragment_container, fragment)
                 .commit();
     }
 
-    private void addDetailFragmentWithExoPlayer(SimpleExoPlayer player, Uri mediaUri) {
-        DetailFragment fragment = new DetailFragment();
-        fragment.setRecipeData(mRecipeData);
-        fragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
-        fragment.refreshSteps();
-        // Prepare the MediaSource.
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .add(R.id.recipe_container, fragment)
-                .commit();
-
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState.containsKey(RECIPE_DATA)) {
-            mRecipeData = (RecipeRecordCollection) savedInstanceState.getSerializable(RECIPE_DATA);
-            mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
-            mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
-            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
-        }
-        debug("onRestoreInstanceState");
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(IS_TWO_PANE, mTwoPane);
-        outState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
-        outState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
-        outState.putSerializable(RECIPE_DATA, mRecipeData);
-        debug("onSaveInstanceState");
-        super.onSaveInstanceState(outState);
-    }
-
-    private void log(String message) {
-        Log.d(LOG_TAG, message);
-    }
-
-    private String quickLogData() {
-        if (mRecipeData == null) {
-            return "0";
-        }
-        return String.valueOf(mRecipeData.getCount());
-    }
-
-    /*
-    public void playVideo(View view) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
-        if (f == null) {
-            throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        } else if (f instanceof DetailFragment) {
-            mDetailFragment = (DetailFragment) f;
-            if (mRecipeData.getCount() > 0) {
-                mDetailFragment.initializePlayer();
-            }
-        } else {
-            log("Invalid Main List Fragment.");
-        }
-    }
-    */
-    private void debug(String note) {
-        log(note + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
-    }
-
-    /*
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (mDetailFragment != null) {
-            mDetailFragment.releasePlayer("onPause");
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (mDetailFragment != null) {
-            mDetailFragment.releasePlayer("onDestroy");
-        }
-    }
-    */
 }

@@ -1,4 +1,4 @@
-package com.example.android.bakingapp;
+package com.example.android.bakingapp.widget;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
@@ -11,15 +11,14 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.RemoteViews;
 
-import com.example.android.bakingapp.activities.WidgetActivity;
+import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
-import com.example.android.bakingapp.tools.WidgetListService;
+import com.example.android.bakingapp.data.RecipeData;
 
 /**
  * Implementation of App Widget functionality.
- * App Widget Configuration implemented in {@link WidgetActivity WidgetActivity}
+ * App Widget Configuration implemented in {@link WidgetConfigureActivity WidgetConfigureActivity}
  */
 public class RecipeWidgetProvider extends AppWidgetProvider {
 
@@ -55,7 +54,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
     public void onDeleted(Context context, int[] appWidgetIds) {
         // When the user deletes the widget, delete the preference associated with it.
         for (int appWidgetId : appWidgetIds) {
-            WidgetActivity.deleteTitlePref(context, appWidgetId);
+            WidgetConfigureActivity.deleteTitlePref(context, appWidgetId);
         }
     }
 
@@ -69,7 +68,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
         // Enter relevant functionality for when the last widget is disabled
     }
 
-    public static class FetchRecipesTask extends AsyncTask<Void, Void, RecipeRecordCollection> {
+    public static class FetchRecipesTask extends AsyncTask<Void, Void, RecipeData> {
 
         private Context mContext;
         private AppWidgetManager mManager;
@@ -84,7 +83,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             mManager = manager;
             mAppWidgetId = appWidgetId;
             mViews = new RemoteViews(mContext.getPackageName(), R.layout.recipe_widget_provider);
-            mRecipeId = WidgetActivity.loadRecipePref(context, appWidgetId);
+            mRecipeId = WidgetConfigureActivity.loadRecipePref(context, appWidgetId);
             String recipeName = "Recipe ID " + mRecipeId + " is not valid.";
             if (Schema.isValidRecipe(mRecipeId)) {
                 recipeName = "Loading recipe " + String.valueOf(mRecipeId) + "...";
@@ -93,10 +92,10 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
         }
 
         @Override
-        protected RecipeRecordCollection doInBackground(Void... voids) {
+        protected RecipeData doInBackground(Void... voids) {
             if (Schema.isValidRecipe(mRecipeId)) {
                 log("Fetch widget LOAD: " + String.valueOf(mRecipeId));
-                RecipeRecordCollection collection = NetworkUtils.fetch();
+                RecipeData collection = NetworkUtils.fetch();
                 //ContentValues[] ingredients = collection.getIngredients(recipeId);
                 return collection;
             }
@@ -118,7 +117,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
          * Handles updating the UI depending on the result of the background task.
          */
         @Override
-        protected void onPostExecute(RecipeRecordCollection data) {
+        protected void onPostExecute(RecipeData data) {
             logFunc("onPostExecute", data);
             if (data == null) {
                 showErrorMessage();
@@ -133,7 +132,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
 
             // @TODO Simplify this code that calls the remote list factory thing.
             // https://developer.android.com/guide/topics/appwidgets/index.html#collections
-            Intent intent = new Intent(mContext, WidgetListService.class);
+            Intent intent = new Intent(mContext, RemoteViewsListViewService.class);
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
             intent.putExtra(Schema.RECIPE_ID, mRecipeId);
             intent.putExtra(Schema.INGREDIENTS_EXTRA_KEY, ingredientListString);
@@ -144,7 +143,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
 
         }
 
-        private String[] buildIngredientArray(RecipeRecordCollection data) {
+        private String[] buildIngredientArray(RecipeData data) {
             /*
             if (!Schema.isValidRecipe(mRecipeId)) {
                 return "No ingredients for recipe (" + String.valueOf(mRecipeId) + ")";
@@ -168,10 +167,10 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void updateShoppingList(RecipeRecordCollection collection) {
+    private static void updateShoppingList(RecipeData collection) {
         Log.d("BakingApp", "Update shopping list with data.");
         //RemoteViews views = new RemoteViews(mPackageName, R.layout.recipe_widget_provider);
-        //int recipeId = WidgetActivity.loadRecipePref(context, appWidgetId);
+        //int recipeId = WidgetConfigureActivity.loadRecipePref(context, appWidgetId);
         //views.setTextViewText(R.id.appwidget_recipe_name, collection.getRecipe());
 
         //mAdapter = new ShoppingListAdapter(mContext, collection, mRecipeId);

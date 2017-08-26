@@ -1,4 +1,4 @@
-package com.example.android.bakingapp.tools;
+package com.example.android.bakingapp.widget;
 
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
@@ -16,7 +16,7 @@ import com.example.android.bakingapp.data.Schema;
 
 import butterknife.BindView;
 
-public class WidgetListService extends RemoteViewsService {
+public class RemoteViewsListViewService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         logFunc("onGetViewFactory", intent);
@@ -29,7 +29,7 @@ public class WidgetListService extends RemoteViewsService {
         logFunc("onGetViewFactory: recipeId = " + String.valueOf(recipeId));
 
 
-        // RecipeRecordCollection data = (RecipeRecordCollection) extras.getSerializable(State.RECIPE_DATA);
+        // RecipeData data = (RecipeData) extras.getSerializable(State.RECIPE_DATA);
         String data = extras.getString(Schema.INGREDIENTS_EXTRA_KEY);
         if (data == null) {
             log("2. NULL");
@@ -67,7 +67,7 @@ public class WidgetListService extends RemoteViewsService {
 
         public ListRemoteViewsFactory(Context context, String[] ingredientStrings, int recipeId) {
             super();
-            logFunc("ListRemoteViewsFactory", context, ingredientStrings, recipeId);
+            //logFunc("ListRemoteViewsFactory", context, ingredientStrings, recipeId);
             mContext = context;
             mIngredientStrings = ingredientStrings;
             mRecipeId = recipeId;

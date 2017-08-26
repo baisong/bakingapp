@@ -19,7 +19,7 @@ import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.adapters.IngredientAdapter;
 import com.example.android.bakingapp.adapters.StepRecyclerAdapter;
 import com.example.android.bakingapp.data.Schema;
-import com.example.android.bakingapp.tools.RecipeRecordCollection;
+import com.example.android.bakingapp.data.RecipeData;
 import com.example.android.bakingapp.tools.RecyclerItemClickListener;
 import com.squareup.picasso.Picasso;
 
@@ -36,7 +36,7 @@ public class MainFragment extends Fragment {
     private static final String LOG_TAG = "BakingApp [MAI]{Frag}";
 
     private List<String> mRecipeNames;
-    private RecipeRecordCollection mRecipeData;
+    private RecipeData mRecipeData;
     private int mCurrentRecipe;
     private IngredientAdapter mIngredientAdapter;
     private StepRecyclerAdapter mStepRecyclerAdapter;
@@ -154,7 +154,7 @@ public class MainFragment extends Fragment {
         }
     }
 
-    public void setRecipeData(RecipeRecordCollection data) {
+    public void setRecipeData(RecipeData data) {
         mRecipeData = data;
     }
 

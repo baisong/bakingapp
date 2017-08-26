@@ -27,7 +27,7 @@
                 android:value=".activities.MainActivity" />
         </activity>
 
-        <receiver android:name=".RecipeWidgetProvider">
+        <receiver android:name=".widget.RecipeWidgetProvider">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -38,11 +38,11 @@
         </receiver>
 
         <service
-            android:name=".tools.WidgetListService"
+            android:name=".widget.RemoteViewsListViewService"
             android:exported="false"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
-        <activity android:name=".activities.WidgetActivity">
+        <activity android:name=".widget.WidgetConfigureActivity">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
             </intent-filter>

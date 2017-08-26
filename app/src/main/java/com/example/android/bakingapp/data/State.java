@@ -39,7 +39,7 @@ public class State {
     public final static String CURRENT_STEP_INDEX = "step";
     public final static String RECIPE_DATA = "data";
     public final static String IS_TWO_PANE = "twoPane";
-    public final static String IS_PLAYING = "isPlaying";
+    public final static String LAUNCHED_FROM_DETAIL = "launched_from_detail";
 
     /**
      * Enum representing your setting names or key for your setting.
