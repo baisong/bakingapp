@@ -179,8 +179,8 @@ public class DetailFragment extends Fragment {
             throw new UnsupportedOperationException("This version only supports 4 recipes.");
         }
         mCurrentRecipe = recipe;
-        if (step < 0 || step > 10) {
-            throw new UnsupportedOperationException("This version only supports 10 steps");
+        if (step < 0 || step > 100) {
+            throw new UnsupportedOperationException("This version only supports 100 steps");
         }
         mCurrentStep = step;
         mSteps = data.getSteps(recipe);
@@ -218,7 +218,7 @@ public class DetailFragment extends Fragment {
             showToast("First step");
         } else {
             setCurrentStep(mCurrentStep - 1);
-            releasePlayer("BACK");
+            releasePlayer();
             updateStepView("BACK");
         }
     }
@@ -228,7 +228,7 @@ public class DetailFragment extends Fragment {
             showToast("Last step");
         } else {
             setCurrentStep(mCurrentStep + 1);
-            releasePlayer("NEXT");
+            releasePlayer();
             updateStepView("NEXT");
         }
     }
@@ -296,7 +296,7 @@ public class DetailFragment extends Fragment {
     public void initializePlayer(Uri videoUri) {
         if (isPlaying()) {
             log("[  UBUBU  ]                  Attempted to restart! Abort.");
-            releasePlayer("init");
+            releasePlayer();
         }
         else {
             log("[  UBUBU  ]                  Initialize...");
@@ -330,25 +330,13 @@ public class DetailFragment extends Fragment {
      * Release ExoPlayer.
      */
     public void releasePlayer() {
+        setPlayerState(false);
         if (mExoPlayer == null) {
             return;
         }
         mExoPlayer.stop();
         mExoPlayer.release();
         mExoPlayer = null;
-    }
-
-    /**
-     * Release ExoPlayer.
-     */
-    public void releasePlayer(String logMessage) {
-        log(logMessage + " - mExoPlayer destroyed.");
-        setPlayerState(false);
-        if (mExoPlayer != null) {
-            mExoPlayer.stop();
-            mExoPlayer.release();
-            mExoPlayer = null;
-        }
     }
 
     private void setPlayerState(boolean newValue) {
@@ -364,7 +352,7 @@ public class DetailFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        releasePlayer("onPause");
+        releasePlayer();
     }
 
     private void getCurrentRecipeStep() {

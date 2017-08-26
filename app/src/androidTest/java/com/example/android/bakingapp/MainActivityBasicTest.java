@@ -1,5 +1,7 @@
 package com.example.android.bakingapp;
 
+import android.os.RemoteException;
+import android.os.SystemClock;
 import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.rule.ActivityTestRule;
@@ -65,6 +67,20 @@ public class MainActivityBasicTest {
             onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
 
         } catch (UiObjectNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void rotateMainActivity_detailFragmentDisplaysFirstStep() {
+        UiDevice device = UiDevice.getInstance(getInstrumentation());
+        //UiScrollable uiScrollable = new UiScrollable(new UiSelector().scrollable(true));
+        try {
+            device.setOrientationLeft();
+            SystemClock.sleep(500);
+            onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
+        }
+        catch (RemoteException e) {
             e.printStackTrace();
         }
     }

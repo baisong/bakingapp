@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,62 +36,55 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
 
+    /**
+     * Provide the "Main List" view and widescreen Detail Fragment for "Main-Detail" navigation.
+     *
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         Bundle extras = getIntent().getExtras();
+
+        // Set current recipe step to the first step of the first recipe on initial launch.
         boolean justLaunchedApp = ((savedInstanceState == null) && (extras == null));
         if (justLaunchedApp) {
             setCurrentRecipeStep(0, 0);
-        }
-        else {
-            // Restore fetched recipe data if available.
-            getCurrentRecipeStep();
-        }
-
-        if (savedInstanceState != null) {
-            if(savedInstanceState.containsKey(State.RECIPE_DATA)) {
-                mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
-            }
-        }
-        // Register first recipe & step and that ExoPlayer is not playing if app just launched.
-        else {
             State.getInstance(getApplicationContext()).put(State.Key.IS_PLAYING, false);
             State.getInstance().put(State.Key.ACTIVE_RECIPE_INT, 0);
             State.getInstance().put(State.Key.ACTIVE_STEP_INT, 0);
         }
-
-        // Fetch current recipe and step if device just rotated from step (detail) screen.
-        if (extras != null) {
-            if (extras.getBoolean(State.LAUNCHED_FROM_DETAIL)) {
+        // Otherwise, restore from SharedPreferences if available.
+        else {
+            getCurrentRecipeStep();
+            // Restore fetched recipe data if available.
+            if (savedInstanceState != null && savedInstanceState.containsKey(State.RECIPE_DATA)) {
+                mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
+            }
+            // Fetch current recipe and step if device just rotated from step (detail) screen.
+            if (extras != null && extras.getBoolean(State.LAUNCHED_FROM_DETAIL)) {
                 mCurrentRecipe = extras.getInt(State.CURRENT_RECIPE_INDEX);
                 mCurrentStep = extras.getInt(State.CURRENT_STEP_INDEX);
             }
         }
 
         // Detect two pane and release ExoPlayer if detail exists to prevent duplicate session.
-        mTwoPane = false;
-        if (findViewById(R.id.ll_recipe_wrapper) != null) {
-            mTwoPane = true;
-            if (mDetailFragment != null) mDetailFragment.releasePlayer("From Main");
-        }
+        mTwoPane = (findViewById(R.id.ll_recipe_wrapper) != null);
+        if (mTwoPane && (mDetailFragment != null)) mDetailFragment.releasePlayer();
 
+        // Update Main & Detail Fragments if data is already loaded, otherwise fetch in background.
         if (dataLoaded()) {
-            updateMainFragment();
-            if (mTwoPane) {
-                //Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onCreate");
-                //addDetailFragment();
-            }
-        }
-        else {
+            updateMainAndDetailFragments();
+        } else {
             new FetchRecipesTask().execute();
         }
     }
 
     /**
      * Restore fetched recipe data if available, update current recipe, step, and twoPane values.
+     *
      * @param savedInstanceState
      */
     @Override
@@ -102,23 +94,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
         }
         getCurrentRecipeStep();
-        if (dataLoaded() && mDetailFragment != null) {
-            mDetailFragment.setRecipeData(mRecipeData);
-            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
+        mTwoPane = (findViewById(R.id.ll_recipe_wrapper) != null);
+        if (!dataLoaded() || mDetailFragment == null) {
+            return;
         }
-        mTwoPane = false;
-        if (findViewById(R.id.ll_recipe_wrapper) != null) {
-            mTwoPane = true;
-
-            if (!savedInstanceState.getBoolean(State.IS_TWO_PANE) && !State.getInstance(getApplicationContext()).getBoolean(State.Key.IS_PLAYING)) {
-                Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onRestoreInstanceState");
-                //addDetailFragment();
-            }
-        }
+        mDetailFragment.setRecipeData(mRecipeData);
+        mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
     }
 
     /**
      * Store current data, recipe, step and twoPane values.
+     *
      * @param outState
      */
     @Override
@@ -156,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         if (id >= 0 && id < 4) {
             setCurrentRecipeStep(id);
             //addMainFragment();
-            updateMainFragment();
+            updateMainAndDetailFragments();
             return true;
         }
 
@@ -172,14 +158,14 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         try {
             mCurrentRecipe = State.getInstance(getApplicationContext()).getInt(State.Key.ACTIVE_RECIPE_INT);
             mCurrentStep = State.getInstance().getInt(State.Key.ACTIVE_STEP_INT);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     /**
      * Utility function to treat null data as 0.
+     *
      * @return
      */
     private boolean dataLoaded() {
@@ -189,11 +175,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     /**
      * Find the Main Fragment by ID, set current data and recipe values, and update view.
      */
-    public void updateMainFragment() {
+    public void updateMainAndDetailFragments() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
-            throw new UnsupportedOperationException("Unable to load Main List fragment.");
+            throw new UnsupportedOperationException(getString(R.string.could_not_load_main_frag));
         }
         if (!(f instanceof MainFragment) || !dataLoaded()) {
             return;
@@ -205,24 +191,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         mMainFragment.loadCurrentRecipe();
 
         if (mTwoPane) {
-            Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from updateMainFragment");
-            debug("updateMainFragment addDetailFrag");
             addDetailFragment();
         }
     }
-
-    private static final String LOG_TAG = "BakingApp [MAI]{Acty}";
-    private void log(String message) {
-        Log.d(LOG_TAG, message);
-    }
-
-    private void debug(String note) {
-        log(note + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + (dataLoaded() ? mRecipeData.getCount() : "null"));
-    }
-
 
     /**
      * Create a new Detail Fragment with new data and replace view using FragmentManager.
@@ -245,28 +216,20 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     }
 
     /**
-     * Find Main Fragment by ID, set
+     * Reset the current recipe and step to the first step of the specified recipe.
      *
-    private void addMainFragment() {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
-        if (f == null) {
-            throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        }
-        if (!(f instanceof MainFragment) || !dataLoaded()) {
-            return;
-        }
-        mMainFragment = (MainFragment) f;
-        mMainFragment.setRecipeData(mRecipeData);
-        mMainFragment.setCurrentRecipe(mCurrentRecipe);
-        mMainFragment.loadCurrentRecipe();
-        if (mTwoPane) addDetailFragment();
-    } */
-
+     * @param recipe
+     */
     private void setCurrentRecipeStep(int recipe) {
         setCurrentRecipeStep(recipe, 0);
     }
 
+    /**
+     * Set the current recipe and step to member variables and SharedPreferences.
+     *
+     * @param recipe
+     * @param step
+     */
     private void setCurrentRecipeStep(int recipe, int step) {
         mCurrentRecipe = recipe;
         mCurrentStep = step;
@@ -274,6 +237,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
     }
 
+    /**
+     * Launch activity or display fragment. Implementation of MainFragment.onStepClickListener().
+     *
+     * @param recipe
+     * @param step
+     */
     public void onStepSelected(int recipe, int step) {
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
@@ -294,6 +263,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
+    /**
+     * Set the member variable and DetailFragment member variable to the received data.
+     *
+     * @param data
+     */
     private void updateRecipeData(RecipeData data) {
         mRecipeData = data;
         if (mDetailFragment != null) {
@@ -301,8 +275,17 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
+    /**
+     * Fetch the recipe data from remote source via network process on background thread.
+     */
     private class FetchRecipesTask extends AsyncTask<Void, Void, RecipeData> {
 
+        /**
+         * Run the HTTP request in background thread.
+         *
+         * @param voids
+         * @return
+         */
         @Override
         protected RecipeData doInBackground(Void... voids) {
             RecipeData data = NetworkUtils.fetch();
@@ -320,24 +303,19 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
 
         /**
-         * Handles updating the UI depending on the result of the background task.
+         * Update the UI depending on the result of the background task.
          */
         @Override
         protected void onPostExecute(RecipeData data) {
             mLoadingIndicator.setVisibility(View.GONE);
-            if (data != null) {
-                updateRecipeData(data);
-                setCurrentRecipeStep(mCurrentRecipe, mCurrentStep);
-                invalidateOptionsMenu();
-                updateMainFragment();
-                if (mTwoPane) {
-                    Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onPostExecute");
-                    //addDetailFragment();
-                }
-            } else {
+            if (data == null) {
                 showErrorMessage();
+                return;
             }
+            updateRecipeData(data);
+            setCurrentRecipeStep(mCurrentRecipe, mCurrentStep);
+            invalidateOptionsMenu();
+            updateMainAndDetailFragments();
         }
     }
-
 }

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 
 import com.example.android.bakingapp.R;
@@ -88,12 +87,8 @@ public class DetailActivity extends AppCompatActivity {
             return;
         }
         final Intent intent = new Intent(this, MainActivity.class);
-        //intent.putExtra(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
-        //intent.putExtra(State.CURRENT_STEP_INDEX, mCurrentStep);
         State.getInstance(getApplicationContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        Log.d("BakingApp [DET]{Acty}", "CURRENT RECIPE ABOUT THING: " + String.valueOf(mCurrentStep));
         State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
-        //intent.putExtra(State.LAUNCHED_FROM_DETAIL, true);
         Bundle bundle = new Bundle();
         bundle.putSerializable(State.RECIPE_DATA, mRecipeData);
         intent.putExtras(bundle);

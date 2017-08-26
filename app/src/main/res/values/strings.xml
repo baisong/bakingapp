@@ -16,4 +16,5 @@
     <string name="shopping_list_default">Shopping list item</string>
     <string name="appwidget_ingredient_count_null">Loading...</string>
     <string name="error_message">Error</string>
+    <string name="could_not_load_main_frag">Unable to load Main Fragment.</string>
 </resources>
