@@ -79,5 +79,10 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
             android:id="@+id/rv_steps"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
+        <LinearLayout
+            android:id="@+id/ll_screen_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:orientation="vertical"/>
     </LinearLayout>
 </android.support.v4.widget.NestedScrollView>
