@@ -2,8 +2,6 @@ package com.example.android.bakingapp.data;
 
 import android.content.ContentValues;
 
-import com.example.android.bakingapp.data.Schema;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,12 +12,16 @@ import java.util.List;
 
 import static com.example.android.bakingapp.data.Schema.RECIPE_NAME;
 
+/**
+ * Stores values converted from JSON into ContentValue[] arrays with get/set and helper functions.
+ */
 public class RecipeData implements Serializable {
-    String mRawJson;
+    private String mRawJson;
     private static ContentValues[] recipes;
     private static ContentValues[][] ingredients;
     private static ContentValues[][] steps;
 
+    // Custom (royalty-free) images to represent the assigned 4 reciped.
     private static final String[] RECIPE_IMAGES = new String[]{
             "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/nutellapie.jpg",
             "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/brownies.jpg",
@@ -27,12 +29,37 @@ public class RecipeData implements Serializable {
             "https://raw.githubusercontent.com/baisong/bakingapp-extras/master/cheesecake.jpg",
     };
 
+
+    /**
+     * Initialize with JSON string.
+     *
+     * @param json
+     */
+    public RecipeData(String json) {
+        loadFromJson(json);
+    }
+
+    /**
+     * Helper function to access items in ContentValues[] arrays.
+     *
+     * @param list
+     * @param position
+     * @return
+     */
     private ContentValues getItem(ContentValues[] list, int position) {
         if (list.length >= (position + 1)) {
             return list[position];
         }
         return null;
     }
+
+    /**
+     * Used by getIngredients() and getSteps() to access recipe steps and recipe ingredients.
+     *
+     * @param list
+     * @param position
+     * @return
+     */
     private ContentValues[] getList(ContentValues[][] list, int position) {
         if (list.length >= (position + 1)) {
             return list[position];
@@ -40,10 +67,31 @@ public class RecipeData implements Serializable {
         return null;
     }
 
-    public RecipeData(String json) {
-        loadFromJson(json);
+    /**
+     * Get the array of ingredients for the recipe at the specified position.
+     *
+     * @param position
+     * @return
+     */
+    public ContentValues[] getIngredients(int position) {
+        return getList(ingredients, position);
     }
 
+    /**
+     * Get the array of steps for the recipe at the specified position.
+     *
+     * @param position
+     * @return
+     */
+    public ContentValues[] getSteps(int position) {
+        return getList(steps, position);
+    }
+
+    /**
+     * Return true if there is well-formatted recipe data in the raw JSON string.
+     *
+     * @return
+     */
     public boolean hasData() {
         if (mRawJson == null || mRawJson.length() == 0) return false;
         try {
@@ -56,6 +104,11 @@ public class RecipeData implements Serializable {
         }
     }
 
+    /**
+     * Parse and assign recipe data to member variables.
+     *
+     * @param json
+     */
     public void loadFromJson(String json) {
         mRawJson = json;
         recipes = new ContentValues[]{};
@@ -74,11 +127,15 @@ public class RecipeData implements Serializable {
         }
     }
 
+    /**
+     * Helper function to troubleshoot bad data.
+     */
     public void reload() {
         loadFromJson(mRawJson);
     }
 
     /**
+     * Parse JSONArray recipes into a ContentValues[] array.
      *
      * @param recipes
      * @return
@@ -93,6 +150,7 @@ public class RecipeData implements Serializable {
 
 
     /**
+     * Parse recipe steps from a recipe JSONObject into a ContentValues[] array.
      *
      * @param recipe
      * @return
@@ -102,14 +160,14 @@ public class RecipeData implements Serializable {
             int recipeId = recipe.getInt(Schema.RECIPE_ID);
             JSONArray ingredients = recipe.getJSONArray(Schema.RECIPE_STEPS_ARRAY);
             return getItems(ingredients, Schema.STEP_CONTENT_FIELDS, Schema.RECIPE_REFERENCE_ID, recipeId);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
     }
 
     /**
+     * Parse recipe ingredients from a recipe JSONObject into a ContentValues[] array.
      *
      * @param recipe
      * @return
@@ -119,8 +177,7 @@ public class RecipeData implements Serializable {
             int recipeId = recipe.getInt(Schema.RECIPE_ID);
             JSONArray ingredients = recipe.getJSONArray(Schema.RECIPE_INGREDIENTS_ARRAY);
             return getItems(ingredients, Schema.INGREDIENT_CONTENT_FIELDS, Schema.RECIPE_REFERENCE_ID, recipeId);
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
@@ -128,6 +185,7 @@ public class RecipeData implements Serializable {
 
 
     /**
+     * Helper function to populate ContentValues[] array item fields.
      *
      * @param jsonArray
      * @param fields
@@ -138,6 +196,9 @@ public class RecipeData implements Serializable {
     }
 
     /**
+     * Helper function to populate ContentValues[] array item fields, allowing local extra fields.
+     * <p>
+     * The only extra field provided at this time is the custom recipe image URL field.
      *
      * @param jsonArray
      * @param fields
@@ -154,14 +215,12 @@ public class RecipeData implements Serializable {
                 for (int i = 0; i < length; i++) {
                     if (extraKey.length() > 0 && extraValue > 0) {
                         items[i] = prepareFromJson(jsonArray.getJSONObject(i), fields, extraKey, extraValue);
-                    }
-                    else {
+                    } else {
                         items[i] = prepareFromJson(jsonArray.getJSONObject(i), fields);
                     }
                 }
             }
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
@@ -170,6 +229,7 @@ public class RecipeData implements Serializable {
     }
 
     /**
+     * Helper function to extract JSONObject into a ContentValues item, allowing local extra field.
      *
      * @param json
      * @param keys
@@ -185,6 +245,7 @@ public class RecipeData implements Serializable {
     }
 
     /**
+     * Helper function to extract JSONObject into a ContentValues item.
      *
      * @param json
      * @param keys
@@ -198,54 +259,67 @@ public class RecipeData implements Serializable {
                 item.put(key, json.getString(key));
             }
             return item;
-        }
-        catch (JSONException e) {
+        } catch (JSONException e) {
             e.printStackTrace();
             return null;
         }
     }
 
+    /**
+     * Set the recipes ContentValues[] array.
+     *
+     * @param values
+     */
     public void setRecipes(ContentValues[] values) {
         recipes = values;
         ingredients = new ContentValues[recipes.length][];
         steps = new ContentValues[recipes.length][];
     }
+
+    /**
+     * Set the given recipe's ContentValue[] array of ingredients.
+     *
+     * @param recipeIndex
+     * @param values
+     */
     public void setRecipeIngredients(int recipeIndex, ContentValues[] values) {
         ingredients[recipeIndex] = values;
     }
 
+    /**
+     * Set the given recipe's ContentValue[] array of steps.
+     *
+     * @param recipeIndex
+     * @param values
+     */
     public void setRecipeSteps(int recipeIndex, ContentValues[] values) {
         steps[recipeIndex] = values;
     }
 
+    /**
+     * Get the given recipe ContentValues object.
+     *
+     * @param position
+     * @return
+     */
     public ContentValues getRecipe(int position) {
         return getItem(recipes, position);
     }
 
-    public ContentValues getIngredient(int recipeIndex, int position) {
-        return getItem(getIngredients(recipeIndex), position);
-    }
-
-    public ContentValues[] getIngredients(int position) {
-        return getList(ingredients, position);
-    }
-
-    public ContentValues getStep(int recipeIndex, int position) {
-        return getItem(getSteps(recipeIndex), position);
-    }
-
-    public ContentValues[] getSteps(int position) {
-        return getList(steps, position);
-    }
-
+    /**
+     * Get the number of parsed recipes.
+     *
+     * @return
+     */
     public int getCount() {
         return recipes.length;
     }
 
-    public String getInfoString() {
-        return mRawJson;
-    }
-
+    /**
+     * Return a list of the names of the parsed recipes.
+     *
+     * @return
+     */
     public List<String> getRecipeNames() {
         List<String> recipeNames = new ArrayList<>();
         for (ContentValues recipe : recipes) {
@@ -255,25 +329,12 @@ public class RecipeData implements Serializable {
         return recipeNames;
     }
 
+    /**
+     * Return the recipe ContentValues[] array.
+     *
+     * @return
+     */
     public ContentValues[] getRecipes() {
         return recipes;
     }
-
-    /*
-    public CharSequence[] getNamesAsListPreferenceEntries() {
-        CharSequence[] entries = new CharSequence[recipes.length];
-        for (int i = 0; i < recipes.length; i++) {
-            entries[i] = recipes[i].getAsString(RECIPE_NAME);
-        }
-        return entries;
-    }
-
-    public int[] getNamesAsListPreferenceValues() {
-        int[] values = new int[recipes.length];
-        for (int i = 0; i < recipes.length; i++) {
-            values[i] = i;
-        }
-        return values;
-    }
-    */
 }

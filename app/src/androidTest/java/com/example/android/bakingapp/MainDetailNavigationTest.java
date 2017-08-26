@@ -64,6 +64,7 @@ public class MainDetailNavigationTest {
     @Test
     public void rotateDetailActivity_preservesCurrentRecipeStep() {
         setupUiObjects();
+        rotateNatural();
         try {
             mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));

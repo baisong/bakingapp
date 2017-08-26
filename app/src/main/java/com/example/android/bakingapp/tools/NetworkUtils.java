@@ -2,7 +2,6 @@ package com.example.android.bakingapp.tools;
 
 import android.net.Uri;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.example.android.bakingapp.data.RecipeData;
 
@@ -104,7 +103,6 @@ public final class NetworkUtils {
         try {
             String jsonString = getResponseFromHttpUrl(movieQueryUrl);
             RecipeData collection = new RecipeData(jsonString);
-            Log.d(LOG_TAG, collection.getInfoString());
             return collection;
         } catch (IOException e) {
             e.printStackTrace();

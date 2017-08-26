@@ -23,6 +23,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * Displays the "Main List" view and widescreen Detail Fragment for "Main-Detail" navigation.
+ * <p>
+ * Launched as app parent activity, or via explicit intent when detail view rotates widescreen.
+ */
 public class MainActivity extends AppCompatActivity implements MainFragment.OnStepClickListener {
 
     private boolean mTwoPane;
@@ -37,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     ProgressBar mLoadingIndicator;
 
     /**
-     * Provide the "Main List" view and widescreen Detail Fragment for "Main-Detail" navigation.
+     * Provide
      *
      * @param savedInstanceState
      */

@@ -13,19 +13,22 @@ import com.example.android.bakingapp.data.Schema;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+/**
+ * Adapter for Main Activity RecyclerView displaying list of recipe ingredients.
+ */
 public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.IngredientHolder> {
 
     private ContentValues[] mItems;
 
     /**
-     * Creates an Adapter.
+     * Create an Adapter.
      */
     public IngredientAdapter() {
         super();
     }
 
     /**
-     * Cache of the children views for a item_ingredient view.
+     * Cache the children views for a item_ingredient view.
      */
     public class IngredientHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.tv_ingredient_name)
@@ -41,14 +44,11 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
         public IngredientHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
-            mName = (TextView) view.findViewById(R.id.tv_ingredient_name);
-            mQuantity = (TextView) view.findViewById(R.id.tv_quantity);
-            mMeasure = (TextView) view.findViewById(R.id.tv_measure);
         }
     }
 
     /**
-     * Returns the number of items.
+     * Return the number of items.
      */
     @Override
     public int getItemCount() {
@@ -57,7 +57,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     }
 
     /**
-     * Initializes each visible view holder on the screen.
+     * Initialize each visible view holder on the screen.
      */
     @Override
     public IngredientHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -68,7 +68,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     }
 
     /**
-     * Displays the layout bound to each visible view.
+     * Display the layout bound to each visible view.
      */
     @Override
     public void onBindViewHolder(IngredientHolder holder, int position) {
@@ -79,7 +79,7 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.In
     }
 
     /**
-     * Refreshes the data held in the adapter.
+     * Refresh the data held in the adapter.
      */
     public void setIngredientsData(ContentValues[] items) {
         mItems = items;

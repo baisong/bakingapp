@@ -35,14 +35,18 @@ public class MainActivityBasicTest {
     @Rule
     public ActivityTestRule<MainActivity> mMainRule = new ActivityTestRule<>(MainActivity.class);
 
+    public UiDevice mDevice;
+    public UiScrollable mScrollable;
+
     /**
      * Launch the app's main activity, and verify that clicking a step launches the detail activity.
      */
     @Test
     public void clickOnStep_launchesStepActivity() {
-        UiScrollable uiScrollable = setupNestedScrollViewScrolling();
+        setupUiObjects();
+        rotateNatural();
         try {
-            uiScrollable.scrollForward();
+            mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
             onView(withId(R.id.nsv_detail_fragment_wrapper)).check(exists());
 
@@ -56,12 +60,14 @@ public class MainActivityBasicTest {
      */
     @Test
     public void clickOnNextButton_launchesNextStep() {
-        UiScrollable uiScrollable = setupNestedScrollViewScrolling();
+        setupUiObjects();
+        rotateNatural();
         try {
-            uiScrollable.scrollForward();
+            mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
             onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
             onView(withId(R.id.btn_next_step)).perform(click());
+            SystemClock.sleep(500);
             onView(withId(R.id.tv_current_step)).check(matches(withText("2")));
             onView(withId(R.id.btn_prev_step)).perform(click());
             onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
@@ -73,16 +79,10 @@ public class MainActivityBasicTest {
 
     @Test
     public void rotateMainActivity_detailFragmentDisplaysFirstStep() {
-        UiDevice device = UiDevice.getInstance(getInstrumentation());
-        //UiScrollable uiScrollable = new UiScrollable(new UiSelector().scrollable(true));
-        try {
-            device.setOrientationLeft();
-            SystemClock.sleep(500);
-            onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
-        }
-        catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        setupUiObjects();
+        rotateNatural();
+        rotateLeft();
+        onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
     }
 
     /**
@@ -98,9 +98,39 @@ public class MainActivityBasicTest {
      * Utility setup function to allow scrolling on NestedScrollView views.
      *
      * @return
-     */
+     *
     public UiScrollable setupNestedScrollViewScrolling() {
         UiDevice.getInstance(getInstrumentation());
         return new UiScrollable(new UiSelector().scrollable(true));
+    }*/
+
+    /**
+     * Utility setup function to allow scrolling on NestedScrollView views.
+     *
+     * @return
+     */
+    public void setupUiObjects() {
+        mDevice = UiDevice.getInstance(getInstrumentation());
+        mScrollable = new UiScrollable(new UiSelector().scrollable(true));
+    }
+
+    public void rotateNatural() {
+        try {
+            mDevice.setOrientationNatural();
+            SystemClock.sleep(500);
+        }
+        catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void rotateLeft() {
+        try {
+            mDevice.setOrientationLeft();
+            SystemClock.sleep(500);
+        }
+        catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 }
