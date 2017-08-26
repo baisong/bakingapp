@@ -197,6 +197,7 @@ public class DetailFragment extends Fragment {
         } else {
             setCurrentStep(mCurrentStep - 1);
             releasePlayer();
+            updateStepView();
         }
     }
 
@@ -207,6 +208,7 @@ public class DetailFragment extends Fragment {
         } else {
             setCurrentStep(mCurrentStep + 1);
             releasePlayer();
+            updateStepView();
         }
     }
 
