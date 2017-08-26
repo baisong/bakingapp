@@ -13,11 +13,11 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.data.RecipeData;
 import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.data.RecipeData;
 
 import java.util.List;
 
@@ -30,68 +30,142 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
     private RecipeData mRecipeData;
-
     private int mCurrentRecipe;
     private int mCurrentStep;
-    private String DETAIL_FRAGMENT_TAG = "DetailFrag";
-
-    private final String LOG_TAG = "BakingApp [MAI]{Acty}";
+    private final static String DETAIL_FRAGMENT_TAG = "DetailFrag";
 
     @BindView(R.id.pb_loading_data)
     ProgressBar mLoadingIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        log("onCreate BEG");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        if (savedInstanceState != null) {
+        Bundle extras = getIntent().getExtras();
+        boolean justLaunchedApp = ((savedInstanceState == null) && (extras == null));
+        if (justLaunchedApp) {
+            setCurrentRecipeStep(0, 0);
+        }
+        else {
+            // Restore fetched recipe data if available.
             getCurrentRecipeStep();
+        }
+
+        if (savedInstanceState != null) {
             if(savedInstanceState.containsKey(State.RECIPE_DATA)) {
                 mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
             }
         }
+        // Register first recipe & step and that ExoPlayer is not playing if app just launched.
         else {
-            log("INIT NO PLAYER");
             State.getInstance(getApplicationContext()).put(State.Key.IS_PLAYING, false);
+            State.getInstance().put(State.Key.ACTIVE_RECIPE_INT, 0);
+            State.getInstance().put(State.Key.ACTIVE_STEP_INT, 0);
         }
-        Bundle extras = getIntent().getExtras();
+
+        // Fetch current recipe and step if device just rotated from step (detail) screen.
         if (extras != null) {
-            boolean isLaunchedFromDetail = extras.getBoolean(State.LAUNCHED_FROM_DETAIL);
-            if (isLaunchedFromDetail) {
+            if (extras.getBoolean(State.LAUNCHED_FROM_DETAIL)) {
                 mCurrentRecipe = extras.getInt(State.CURRENT_RECIPE_INDEX);
                 mCurrentStep = extras.getInt(State.CURRENT_STEP_INDEX);
-                debug("SUCCESS" + String.valueOf(extras.getInt(State.CURRENT_STEP_INDEX)));
             }
         }
 
+        // Detect two pane and release ExoPlayer if detail exists to prevent duplicate session.
+        mTwoPane = false;
         if (findViewById(R.id.ll_recipe_wrapper) != null) {
             mTwoPane = true;
-            releaseFragmentPlayer();
-            debug("TwoPane!");
-        } else {
-            mTwoPane = false;
+            if (mDetailFragment != null) mDetailFragment.releasePlayer("From Main");
         }
 
         if (dataLoaded()) {
-            loadMainFragmentRecipe();
-            if (mTwoPane) addDetailFragment();
+            updateMainFragment();
+            if (mTwoPane) {
+                //Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onCreate");
+                //addDetailFragment();
+            }
         }
         else {
             new FetchRecipesTask().execute();
         }
-        debug("onCreate END");
     }
 
-    private void releaseFragmentPlayer() {
-        log("Looking for fragment to release...");
-        if (mDetailFragment != null && mDetailFragment instanceof DetailFragment) {
-            log("EUREKA!!!");
-            mDetailFragment.releasePlayer("From Main");
+    /**
+     * Restore fetched recipe data if available, update current recipe, step, and twoPane values.
+     * @param savedInstanceState
+     */
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(State.RECIPE_DATA)) {
+            mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
+        }
+        getCurrentRecipeStep();
+        if (dataLoaded() && mDetailFragment != null) {
+            mDetailFragment.setRecipeData(mRecipeData);
+            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
+        }
+        mTwoPane = false;
+        if (findViewById(R.id.ll_recipe_wrapper) != null) {
+            mTwoPane = true;
+
+            if (!savedInstanceState.getBoolean(State.IS_TWO_PANE) && !State.getInstance(getApplicationContext()).getBoolean(State.Key.IS_PLAYING)) {
+                Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onRestoreInstanceState");
+                //addDetailFragment();
+            }
         }
     }
 
+    /**
+     * Store current data, recipe, step and twoPane values.
+     * @param outState
+     */
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        setCurrentRecipeStep(mCurrentRecipe, mCurrentStep);
+        outState.putBoolean(State.IS_TWO_PANE, mTwoPane);
+        outState.putInt(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        outState.putInt(State.CURRENT_STEP_INDEX, mCurrentStep);
+        outState.putSerializable(State.RECIPE_DATA, mRecipeData);
+        super.onSaveInstanceState(outState);
+    }
+
+    /**
+     * Add recipe names to ToolBar options menu.
+     */
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        menu.clear();
+        if (mRecipeData != null && mRecipeData.getCount() > 0) {
+            List<String> names = mRecipeData.getRecipeNames();
+            for (int i = 0; i < names.size(); i++) {
+                menu.add(0, i, Menu.NONE, names.get(i));
+            }
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    /**
+     * Handle Toolbar options menu click actions; load the selected recipe into main fragment.
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id >= 0 && id < 4) {
+            setCurrentRecipeStep(id);
+            //addMainFragment();
+            updateMainFragment();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * Restore current recipe and step from SharedPreferences, default: first step of first recipe.
+     */
     private void getCurrentRecipeStep() {
         mCurrentRecipe = 0;
         mCurrentStep = 0;
@@ -104,123 +178,100 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
+    /**
+     * Utility function to treat null data as 0.
+     * @return
+     */
     private boolean dataLoaded() {
         return mRecipeData != null && mRecipeData.getCount() > 0;
     }
-    private String quickLogData() {
-        if (mRecipeData == null) {
-            return "0";
-        }
-        return String.valueOf(mRecipeData.getCount());
-    }
 
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        debug("onRestore BEG");
-        super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState.containsKey(State.RECIPE_DATA)) {
-            mRecipeData = (RecipeData) savedInstanceState.getSerializable(State.RECIPE_DATA);
-            log("onRestore WITH DATA FROM INSTANCE");
-        } else {
-            log("onRestore NO DATA FROM INSTANCE");
-        }
-        getCurrentRecipeStep();
-        if (dataLoaded() && mDetailFragment != null) {
-            mDetailFragment.setRecipeData(mRecipeData);
-            mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
-        }
-        if (findViewById(R.id.ll_recipe_wrapper) != null) {
-            mTwoPane = true;
-            if (!savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
-                log("New orientation!!! Now horizontal");
-                addDetailFragment();
-            }
-            else {
-                log("Restore but no rotate - still horizontal");
-            }
-        } else {
-            mTwoPane = false;
-            if (savedInstanceState.getBoolean(State.IS_TWO_PANE)) {
-                log("New orientation!!! Now vertical");
-            }
-            else {
-                log("Restore but no rotate - still vertical");
-            }
-        }
-        debug("onRestore END");
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putBoolean(State.IS_TWO_PANE, mTwoPane);
-        outState.putInt(State.CURRENT_RECIPE_INDEX, mCurrentRecipe);
-        outState.putInt(State.CURRENT_STEP_INDEX, mCurrentStep);
-        outState.putSerializable(State.RECIPE_DATA, mRecipeData);
-        debug("saveInst END");
-        super.onSaveInstanceState(outState);
-    }
-
-    public void loadMainFragmentRecipe() {
+    /**
+     * Find the Main Fragment by ID, set current data and recipe values, and update view.
+     */
+    public void updateMainFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        } else if (f instanceof MainFragment) {
-            mMainFragment = (MainFragment) f;
-            debug("loadMainFrag");
-            if (mRecipeData.getCount() > 0) {
-                mMainFragment.setRecipeData(mRecipeData);
-                mMainFragment.setCurrentRecipe(mCurrentRecipe);
-                mMainFragment.loadCurrentRecipe();
-            }
-        } else {
-            log("Invalid Main List Fragment.");
+        }
+        if (!(f instanceof MainFragment) || !dataLoaded()) {
+            return;
+        }
+        getCurrentRecipeStep();
+        mMainFragment = (MainFragment) f;
+        mMainFragment.setRecipeData(mRecipeData);
+        mMainFragment.setCurrentRecipe(mCurrentRecipe);
+        mMainFragment.loadCurrentRecipe();
+
+        if (mTwoPane) {
+            Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from updateMainFragment");
+            debug("updateMainFragment addDetailFrag");
+            addDetailFragment();
         }
     }
 
+    private static final String LOG_TAG = "BakingApp [MAI]{Acty}";
     private void log(String message) {
         Log.d(LOG_TAG, message);
     }
 
+    private void debug(String note) {
+        log(note + " twoPane: " + String.valueOf(mTwoPane)
+                + "; Step: " + String.valueOf(mCurrentRecipe)
+                + "," + String.valueOf(mCurrentStep)
+                + "; Data: " + (dataLoaded() ? mRecipeData.getCount() : "null"));
+    }
+
+
+    /**
+     * Create a new Detail Fragment with new data and replace view using FragmentManager.
+     */
     public void addDetailFragment() {
+        getCurrentRecipeStep();
         mDetailFragment = new DetailFragment();
         mDetailFragment.setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
-        debug("addDetailFrag");
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.detail_fragment_container, mDetailFragment, DETAIL_FRAGMENT_TAG)
                 .commit();
     }
 
+    /**
+     * Display a long toast error message.
+     */
     public void showErrorMessage() {
-        Toast t = Toast.makeText(this, "Error", Toast.LENGTH_LONG);
+        Toast t = Toast.makeText(this, getString(R.string.error_message), Toast.LENGTH_LONG);
         t.show();
     }
 
-    private void onRecipeSelected(int position) {
-        log("=== onRecipeSelected ===");
-        mCurrentRecipe = position;
-        mCurrentStep = 0;
-        State.getInstance(getApplicationContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
-        debug("selected");
-
+    /**
+     * Find Main Fragment by ID, set
+     *
+    private void addMainFragment() {
         FragmentManager fragmentManager = getSupportFragmentManager();
         android.support.v4.app.Fragment f = fragmentManager.findFragmentById(R.id.main_list_fragment);
         if (f == null) {
             throw new UnsupportedOperationException("Unable to load Main List fragment.");
-        } else if (f instanceof MainFragment) {
-            mMainFragment = (MainFragment) f;
-            if (dataLoaded()) {
-                mMainFragment.setRecipeData(mRecipeData);
-                mMainFragment.setCurrentRecipe(mCurrentRecipe);
-                mMainFragment.loadCurrentRecipe();
-                if (mTwoPane) {
-                    addDetailFragment();
-                }
-            }
-        } else {
-            log("Invalid Main List Fragment.");
         }
+        if (!(f instanceof MainFragment) || !dataLoaded()) {
+            return;
+        }
+        mMainFragment = (MainFragment) f;
+        mMainFragment.setRecipeData(mRecipeData);
+        mMainFragment.setCurrentRecipe(mCurrentRecipe);
+        mMainFragment.loadCurrentRecipe();
+        if (mTwoPane) addDetailFragment();
+    } */
+
+    private void setCurrentRecipeStep(int recipe) {
+        setCurrentRecipeStep(recipe, 0);
+    }
+
+    private void setCurrentRecipeStep(int recipe, int step) {
+        mCurrentRecipe = recipe;
+        mCurrentStep = step;
+        State.getInstance(getApplicationContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
     }
 
     public void onStepSelected(int recipe, int step) {
@@ -243,8 +294,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
     }
 
-    private void updateRecipeData(RecipeData collection) {
-        mRecipeData = collection;
+    private void updateRecipeData(RecipeData data) {
+        mRecipeData = data;
         if (mDetailFragment != null) {
             mDetailFragment.setRecipeData(mRecipeData);
         }
@@ -254,9 +305,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
 
         @Override
         protected RecipeData doInBackground(Void... voids) {
-            RecipeData collection = NetworkUtils.fetch();
-            updateRecipeData(collection);
-            return collection;
+            RecipeData data = NetworkUtils.fetch();
+            updateRecipeData(data);
+            return data;
         }
 
         /**
@@ -272,54 +323,21 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
          * Handles updating the UI depending on the result of the background task.
          */
         @Override
-        protected void onPostExecute(RecipeData collection) {
+        protected void onPostExecute(RecipeData data) {
             mLoadingIndicator.setVisibility(View.GONE);
-            if (collection != null) {
-                updateRecipeData(collection);
+            if (data != null) {
+                updateRecipeData(data);
+                setCurrentRecipeStep(mCurrentRecipe, mCurrentStep);
                 invalidateOptionsMenu();
-                loadMainFragmentRecipe();
-                if (mTwoPane) addDetailFragment();
+                updateMainFragment();
+                if (mTwoPane) {
+                    Log.d("BakingApp [MAI]{Acty}","[  UBUBU  ] Add detail fragment from onPostExecute");
+                    //addDetailFragment();
+                }
             } else {
                 showErrorMessage();
             }
         }
     }
 
-    /**
-     * Gets called every time the user presses the menu button.
-     * Use if your menu is dynamic.
-     */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.clear();
-        if (mRecipeData != null && mRecipeData.getCount() > 0) {
-            List<String> names = mRecipeData.getRecipeNames();
-            for (int i = 0; i < names.size(); i++) {
-                menu.add(0, i, Menu.NONE, names.get(i));
-            }
-        }
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    /**
-     * Handles menu item selection by updating the data inside the RecyclerView.
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id >= 0 && id < 4) {
-            onRecipeSelected(id);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    private void debug(String note) {
-        log(note + " twoPane: " + String.valueOf(mTwoPane)
-                + "; Step: " + String.valueOf(mCurrentRecipe)
-                + "," + String.valueOf(mCurrentStep)
-                + "; Data: " + quickLogData());
-    }
 }

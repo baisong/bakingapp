@@ -120,14 +120,14 @@ public class DetailFragment extends Fragment {
         debug("onViewCreated =======");
         if (savedInstanceState != null) {
             log("create 1. EXISTS");
-            //mCurrentRecipe = savedInstanceState.getInt(CURRENT_RECIPE_INDEX);
-            //mCurrentStep = savedInstanceState.getInt(CURRENT_STEP_INDEX);
             setCurrentStep(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
             mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
             mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
             debug("onViewCreated w/ data");
-        } else {
-            log("onViewCreated no data");
+        }
+        else {
+            getCurrentRecipeStep();
+            debug("onViewCreated NO DATA");
         }
     }
 
@@ -200,13 +200,13 @@ public class DetailFragment extends Fragment {
         currentState.putSerializable(RECIPE_DATA, mRecipeData);
         State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
         State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        debug("onSaveInstanceState");
         super.onSaveInstanceState(currentState);
     }
 
     private void showToast(String message) {
         Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
     }
-
 
     public void setCurrentStep(int newValue) {
         mCurrentStep = newValue;
@@ -330,11 +330,12 @@ public class DetailFragment extends Fragment {
      * Release ExoPlayer.
      */
     public void releasePlayer() {
-        if (mExoPlayer != null) {
-            mExoPlayer.stop();
-            mExoPlayer.release();
-            mExoPlayer = null;
+        if (mExoPlayer == null) {
+            return;
         }
+        mExoPlayer.stop();
+        mExoPlayer.release();
+        mExoPlayer = null;
     }
 
     /**

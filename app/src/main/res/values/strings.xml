@@ -15,4 +15,5 @@
     <string name="appwidget_configure_title">Ready to shop?</string>
     <string name="shopping_list_default">Shopping list item</string>
     <string name="appwidget_ingredient_count_null">Loading...</string>
+    <string name="error_message">Error</string>
 </resources>
