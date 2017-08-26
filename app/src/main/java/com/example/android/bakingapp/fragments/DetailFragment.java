@@ -202,7 +202,6 @@ public class DetailFragment extends Fragment {
     }
 
     public void navigateNext() {
-        // @TODO Fix this!!!
         if ((mCurrentStep + 1) == mSteps.length) {
             showToast("Last step");
         } else {
