@@ -5,7 +5,6 @@ import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.action.ScrollToAction;
-import android.support.test.espresso.assertion.ViewAssertions;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.espresso.util.HumanReadables;
@@ -32,11 +31,13 @@ import org.junit.runner.RunWith;
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static android.support.test.espresso.matcher.ViewMatchers.isDescendantOfA;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayingAtLeast;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.core.AllOf.allOf;
 import static org.hamcrest.core.AnyOf.anyOf;
@@ -61,62 +62,33 @@ public class MainActivityBasicTest {
             onView(withId(R.id.tv_steps_label)).perform(new CustomScrollAction());
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
             onView(withId(R.id.nsv_detail_fragment_wrapper)).check(exists());
+
         } catch (UiObjectNotFoundException e) {
             e.printStackTrace();
         }
         //assertCurrentActivityIsInstanceOf(DetailActivity.class);
     }
 
-    public static ViewAssertion exists() {
-        return ViewAssertions.matches(anything());
-    }
-
-    /*
-    private static ViewAction swipeUpLong() {
-        return new GeneralSwipeAction(Swipe.FAST, GeneralLocation.CENTER_LEFT,
-                GeneralLocation.TOP_LEFT, Press.FINGER);
-    }
-
     @Test
-    public void useAppContext() throws Exception {
-        // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+    public void clickOnNextButton_launchesNextStep() {
+        UiDevice.getInstance(getInstrumentation());
+        UiScrollable appViews = new UiScrollable(new UiSelector().scrollable(true));
+        try {
+            appViews.scrollForward();
+            onView(withId(R.id.tv_steps_label)).perform(new CustomScrollAction());
+            onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+            onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
+            onView(withId(R.id.btn_next_step)).perform(click());
+            onView(withId(R.id.tv_current_step)).check(matches(withText("2")));
 
-        assertEquals("com.example.android.bakingapp", appContext.getPackageName());
+        } catch (UiObjectNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void assertCurrentActivityIsInstanceOf(Class<? extends Activity> activityClass) {
-        Activity currentActivity = getCurrentActivity();
-        Assert.assertNotNull(currentActivity);
-        Assert.assertNotNull(activityClass);
-        Assert.assertTrue(currentActivity.getClass().isAssignableFrom(activityClass));
-    }*/
-
-    /*
-    private Activity getCurrentActivity() {
-        final Activity[] activity = new Activity[1];
-        onView(isRoot()).check(new ViewAssertion() {
-            @Override
-            public void check(View view, NoMatchingViewException noViewFoundException) {
-                activity[0] = (Activity) view.getContext();
-            }
-        });
-        return activity[0];
+    public static ViewAssertion exists() {
+        return matches(anything());
     }
-
-    Activity getCurrentActivity() throws Throwable {
-        getInstrumentation().waitForIdleSync();
-        final Activity[] activity = new Activity[1];
-        runTestOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                java.util.Collection<Activity> activities = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED);
-                activity[0] = Iterables.getOnlyElement(activities);
-            }});
-        return activity[0];
-    }
-
-    */
 
     public final class CustomScrollAction implements android.support.test.espresso.ViewAction {
         private final String TAG = ScrollToAction.class.getSimpleName();
