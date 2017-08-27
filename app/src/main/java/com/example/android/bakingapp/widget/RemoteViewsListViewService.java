@@ -12,6 +12,8 @@ import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
 
 /**
+ * Service to provide a ListView adapter to widgets using a RemoteViewsFactory.
+ * <p>
  * About Widget ListViews: https://developer.android.com/reference/android/widget/ListView.html
  */
 public class RemoteViewsListViewService extends RemoteViewsService {
@@ -38,7 +40,7 @@ public class RemoteViewsListViewService extends RemoteViewsService {
         TextView mQuantity;
         TextView mMeasure;
 
-        public ListRemoteViewsFactory(Context context, String[] ingredientStrings) {
+        private ListRemoteViewsFactory(Context context, String[] ingredientStrings) {
             super();
             mContext = context;
             mIngredientStrings = ingredientStrings;
@@ -70,6 +72,12 @@ public class RemoteViewsListViewService extends RemoteViewsService {
             return 1;
         }
 
+        /**
+         * Updates the RemoteViews object for an ingredient list item in the widget.
+         *
+         * @param position
+         * @return
+         */
         @Override
         public RemoteViews getViewAt(int position) {
             RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.item_shopping_list);
