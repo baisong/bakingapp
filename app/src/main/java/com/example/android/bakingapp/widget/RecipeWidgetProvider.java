@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.text.TextUtils;
 import android.util.Log;
@@ -23,11 +24,14 @@ import com.example.android.bakingapp.tools.NetworkUtils;
 public class RecipeWidgetProvider extends AppWidgetProvider {
 
     private final static String WIDGET_DEFAULT_RECIPE_NAME = "No recipe selected.";
-    private final static String WIDGET_INVALID_RECIPE_PREFIX = "Invalid Recipe ID: ";
-    private final static String WIDGET_LOADING_RECIPE_PREFIX = "Loading Recipe: ";
-    private final static String WIDGET_LOG_NO_DATA = "Widget error: no data.";
-    private final static String INGREDIENTS_SUFFIX = " ingredients";
 
+    /**
+     * Launch AsyncTask to fetch recipe data from remote server.
+     *
+     * @param context
+     * @param manager
+     * @param appWidgetId
+     */
     public static void updateAppWidget(Context context, AppWidgetManager manager, int appWidgetId) {
         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_widget_provider);
         views.setTextViewText(R.id.appwidget_recipe_name, WIDGET_DEFAULT_RECIPE_NAME);
@@ -36,7 +40,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
     }
 
     /**
-     * Update all active widgets.
+     * Update all app widgets.
      *
      * @param context
      * @param appWidgetManager
@@ -50,7 +54,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
     }
 
     /**
-     * Delete preferences for deleted widgets.
+     * Delete preferences for deleted app widgets.
      *
      * @param context
      * @param appWidgetIds
@@ -70,7 +74,16 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
     public void onDisabled(Context context) {
     }
 
+    /**
+     * Task to run HTTP request on background thread.
+     */
     public static class FetchRecipesTask extends AsyncTask<Void, Void, RecipeData> {
+
+        private static final String LOG_TAG = "BakingApp";
+        private static final String WIDGET_INVALID_RECIPE_PREFIX = "Invalid Recipe ID ";
+        private static final String WIDGET_LOADING_RECIPE_PREFIX = "Loading Recipe ";
+        private static final String WIDGET_LOG_NULL_DATA = "Update shopping list with null data.";
+        private static final String INGREDIENTS_SUFFIX = " ingredients";
 
         private Context mContext;
         private AppWidgetManager mManager;
@@ -78,19 +91,32 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
         private int mRecipeId;
         private RemoteViews mViews;
 
+        /**
+         * Set up loading text before background process.
+         *
+         * @param context
+         * @param manager
+         * @param appWidgetId
+         */
         public FetchRecipesTask(Context context, AppWidgetManager manager, int appWidgetId) {
             mContext = context;
             mManager = manager;
             mAppWidgetId = appWidgetId;
             mViews = new RemoteViews(mContext.getPackageName(), R.layout.recipe_widget_provider);
             mRecipeId = WidgetConfigureActivity.loadRecipePref(context, appWidgetId);
-            String recipeName = WIDGET_INVALID_RECIPE_PREFIX + mRecipeId;
+            String recipeName = WIDGET_INVALID_RECIPE_PREFIX + String.valueOf(mRecipeId);
             if (Schema.isValidRecipe(mRecipeId)) {
                 recipeName = WIDGET_LOADING_RECIPE_PREFIX + String.valueOf(mRecipeId);
             }
             mViews.setTextViewText(R.id.appwidget_recipe_name, recipeName);
         }
 
+        /**
+         * Run the background request.
+         *
+         * @param voids
+         * @return
+         */
         @Override
         protected RecipeData doInBackground(Void... voids) {
             if (Schema.isValidRecipe(mRecipeId)) {
@@ -99,39 +125,50 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             return null;
         }
 
-        /**
-         * Show the loader before the task starts.
-         */
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
         }
 
         /**
-         * Handles updating the UI depending on the result of the background task.
+         * Set text on RemoteViews where possible, set RemoteAdapter for ListView.
          */
         @Override
         protected void onPostExecute(RecipeData data) {
             if (data == null) {
-                Log.d("BakingApp", WIDGET_LOG_NO_DATA);
+                Log.d(LOG_TAG, WIDGET_LOG_NULL_DATA);
                 return;
             }
             String recipeName = data.getRecipe(mRecipeId).getAsString(Schema.RECIPE_NAME);
             String[] ingredientArray = buildIngredientArray(data);
             String ingredientCount = String.valueOf(ingredientArray.length + INGREDIENTS_SUFFIX);
-            String ingredientListString = TextUtils.join(Schema.INGREDIENTS_EXTRA_SEPARATOR, ingredientArray);
+            String ingredients = TextUtils.join(Schema.INGREDIENTS_EXTRA_SEPARATOR, ingredientArray);
             mViews.setTextViewText(R.id.appwidget_recipe_name, recipeName);
             mViews.setTextViewText(R.id.appwidget_ingredient_count, ingredientCount);
-
-            Intent intent = new Intent(mContext, RemoteViewsListViewService.class);
-            intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-            intent.putExtra(Schema.INGREDIENTS_EXTRA_KEY, ingredientListString);
-
-            mViews.setRemoteAdapter(R.id.lv_shopping_list, intent);
+            mViews.setRemoteAdapter(R.id.lv_shopping_list, buildRemoteAdapterIntent(ingredients));
             mManager.updateAppWidget(mAppWidgetId, mViews);
 
         }
 
+        /**
+         * Create an Intent object to run the RemoteViewsService.
+         *
+         * @param ingredientListString
+         * @return
+         */
+        private Intent buildRemoteAdapterIntent(String ingredientListString) {
+            Intent intent = new Intent(mContext, RemoteViewsListViewService.class);
+            intent.putExtra(Schema.INGREDIENTS_EXTRA_KEY, ingredientListString);
+            intent.setData(Uri.parse(intent.toUri(Intent.URI_INTENT_SCHEME)));
+            return intent;
+        }
+
+        /**
+         * Prepare list of string values for each recipe step for the widget ListView.
+         *
+         * @param data
+         * @return
+         */
         private String[] buildIngredientArray(RecipeData data) {
             ContentValues[] ingredientRecords = data.getIngredients(mRecipeId);
             String[] ingredientStrings = new String[ingredientRecords.length];
@@ -141,6 +178,12 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             return ingredientStrings;
         }
 
+        /**
+         * A space-separated joined string representing an individual ingredient.
+         *
+         * @param ingredient
+         * @return
+         */
         private String buildIngredientString(ContentValues ingredient) {
             String[] parts = new String[]{
                     ingredient.getAsString(Schema.INGREDIENT_QUANTITY),
