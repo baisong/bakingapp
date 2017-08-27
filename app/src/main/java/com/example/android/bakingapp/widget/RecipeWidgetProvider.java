@@ -112,6 +112,7 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             mAppWidgetId = appWidgetId;
             mViews = new RemoteViews(mContext.getPackageName(), R.layout.recipe_widget_provider);
             mRecipeId = WidgetConfigureActivity.loadRecipePref(context, appWidgetId);
+            //Log.d("BakingApp", "Widget fetch " + String.valueOf(appWidgetId) + ": " + String.valueOf(mRecipeId));
             String recipeName = WIDGET_INVALID_RECIPE_PREFIX + String.valueOf(mRecipeId);
             if (Schema.isValidRecipe(mRecipeId)) {
                 recipeName = WIDGET_LOADING_RECIPE_PREFIX + String.valueOf(mRecipeId + 1);
@@ -155,10 +156,10 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
                 Log.d("BakingApp", WIDGET_LOG_ERROR_INVALID_RECIPE + String.valueOf(mRecipeId));
                 return;
             }
-
+            //Log.d("BakingApp", "Widget fetched " + String.valueOf(mAppWidgetId) + ": " + String.valueOf(mRecipeId));
             // Set the TextView objects' text immediately
             String recipeName = data.getRecipe(mRecipeId).getAsString(Schema.RECIPE_NAME);
-            String[] ingredientArray = buildIngredientArray(data);
+            String[] ingredientArray = buildIngredientArray(data, mRecipeId);
             String ingredientCount = String.valueOf(ingredientArray.length + INGREDIENTS_SUFFIX_PLURAL);
             String ingredientListString = TextUtils.join(Schema.INGREDIENTS_EXTRA_SEPARATOR, ingredientArray);
             mViews.setTextViewText(R.id.appwidget_recipe_name, recipeName);
@@ -167,6 +168,8 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
             // Launch intent to run custom RemoteViewsService to update ListView of ingredients.
             Intent intent = new Intent(mContext, RemoteViewsListViewService.class);
             intent.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            Log.d("BakingApp", mAppWidgetId + " = " + recipeName + " : " + ingredientCount + " =====");
+            Log.d("BakingApp", "..." + ingredientListString);
             intent.putExtra(Schema.INGREDIENTS_EXTRA_KEY, ingredientListString);
             mViews.setRemoteAdapter(R.id.lv_shopping_list, intent);
 
@@ -179,11 +182,14 @@ public class RecipeWidgetProvider extends AppWidgetProvider {
          * @param data
          * @return
          */
-        private String[] buildIngredientArray(RecipeData data) {
-            ContentValues[] ingredientRecords = data.getIngredients(mRecipeId);
+        private String[] buildIngredientArray(RecipeData data, int recipeId) {
+            Log.d("BakingApp", "Build ingredients for " + String.valueOf(recipeId));
+            ContentValues[] ingredientRecords = data.getIngredients(recipeId);
             String[] ingredientStrings = new String[ingredientRecords.length];
             for (int i = 0; i < ingredientRecords.length; i++) {
-                ingredientStrings[i] = buildIngredientString(ingredientRecords[i]);
+                String ingredient = buildIngredientString(ingredientRecords[i]);
+                ingredientStrings[i] = ingredient;
+                if (i == ingredientRecords.length - 1) Log.d("BakingApp", ingredient);
             }
             return ingredientStrings;
         }

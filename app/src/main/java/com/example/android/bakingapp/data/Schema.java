@@ -47,6 +47,6 @@ public class Schema {
         return (stepId <= MAX_STEP_ID && stepId >= MIN_STEP_ID);
     }
     public static final String INGREDIENTS_EXTRA_KEY = "ingredients";
-    public static final String INGREDIENTS_EXTRA_SEPARATOR = "</ingredient><ingredient>";
+    public static final String INGREDIENTS_EXTRA_SEPARATOR = ",,,";
     public static final String INGREDIENT_PART_SEPARATOR = " ";
 }
