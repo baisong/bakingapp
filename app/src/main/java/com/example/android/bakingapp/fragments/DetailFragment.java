@@ -17,10 +17,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.android.bakingapp.R;
+import com.example.android.bakingapp.data.RecipeData;
 import com.example.android.bakingapp.data.Schema;
 import com.example.android.bakingapp.data.State;
 import com.example.android.bakingapp.tools.NetworkUtils;
-import com.example.android.bakingapp.data.RecipeData;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.LoadControl;
@@ -40,12 +40,9 @@ import butterknife.ButterKnife;
 
 import static com.example.android.bakingapp.data.State.CURRENT_RECIPE_INDEX;
 import static com.example.android.bakingapp.data.State.CURRENT_STEP_INDEX;
-import static com.example.android.bakingapp.data.State.IS_TWO_PANE;
 import static com.example.android.bakingapp.data.State.RECIPE_DATA;
 
 public class DetailFragment extends Fragment {
-
-    private static final String LOG_TAG = "BakingApp [DET]{Frag}";
 
     private ContentValues[] mSteps;
     private ContentValues mStep;
@@ -53,9 +50,7 @@ public class DetailFragment extends Fragment {
     private RecipeData mRecipeData;
     private int mCurrentStep;
     private int mCurrentRecipe;
-    private boolean mTwoPane;
     private SimpleExoPlayer mExoPlayer;
-    private Uri mVideoUri;
 
     @BindView(R.id.tv_step_title) TextView mTitle;
     @BindView(R.id.tv_step_body) TextView mBody;
@@ -93,7 +88,6 @@ public class DetailFragment extends Fragment {
         } catch (UnsupportedOperationException e) {
             e.printStackTrace();
         }
-        mStep = getStep();
         if (mStep == null) {
             return rootView;
         }
@@ -104,19 +98,33 @@ public class DetailFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        if (savedInstanceState != null) {
-            setCurrentStep(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
-            mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
-            mTwoPane = savedInstanceState.getBoolean(IS_TWO_PANE);
-        }
-        else {
+        if (savedInstanceState == null) {
             getCurrentRecipeStep();
+            return;
         }
+        setCurrentStep(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
+        mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle currentState) {
+        currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
+        currentState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
+        currentState.putSerializable(RECIPE_DATA, mRecipeData);
+        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        super.onSaveInstanceState(currentState);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        releasePlayer();
     }
 
     public void setRecipeData(RecipeData data) {
@@ -128,7 +136,6 @@ public class DetailFragment extends Fragment {
         mCurrentRecipe = recipe;
         mCurrentStep = step;
         State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        Log.d("BakingApp [DET]{Acty}", "CURRENT RECIPE ABOUT FRAG: " + String.valueOf(mCurrentStep));
         State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
         if (newRecipe && mRecipeData != null && mRecipeData.getCount() > 0) {
             refreshSteps();
@@ -137,10 +144,6 @@ public class DetailFragment extends Fragment {
 
     public void refreshSteps() {
         mSteps = mRecipeData.getSteps(mCurrentRecipe);
-    }
-
-    public ContentValues getStep() {
-        return mStep;
     }
 
     public void setStep(RecipeData data, int recipe, int step) {
@@ -170,16 +173,6 @@ public class DetailFragment extends Fragment {
             throw new UnsupportedOperationException("No step " + String.valueOf(step) + " for recipe " + String.valueOf(recipe));
         }
         mStep = mSteps[mCurrentStep];
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle currentState) {
-        currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
-        currentState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
-        currentState.putSerializable(RECIPE_DATA, mRecipeData);
-        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
-        super.onSaveInstanceState(currentState);
     }
 
     private void showToast(String message) {
@@ -249,7 +242,6 @@ public class DetailFragment extends Fragment {
         if (isPlaying()) {
             releasePlayer();
         }
-        mVideoUri = videoUri;
         if (mExoPlayer == null) {
             TrackSelector trackSelector = new DefaultTrackSelector();
             LoadControl loadControl = new DefaultLoadControl();
@@ -257,7 +249,7 @@ public class DetailFragment extends Fragment {
             mPlayerView.setPlayer(mExoPlayer);
         }
         String userAgent = Util.getUserAgent(getContext(), "BakingApp");
-        MediaSource mediaSource = new ExtractorMediaSource(mVideoUri,
+        MediaSource mediaSource = new ExtractorMediaSource(videoUri,
                 new DefaultDataSourceFactory(getContext(), userAgent),
                 new DefaultExtractorsFactory(),
                 null,
@@ -287,12 +279,6 @@ public class DetailFragment extends Fragment {
 
     private void setPlayerState(boolean newValue) {
         State.getInstance().put(State.Key.IS_PLAYING, newValue);
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        releasePlayer();
     }
 
     private void getCurrentRecipeStep() {
