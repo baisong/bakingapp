@@ -42,6 +42,9 @@ import static com.example.android.bakingapp.data.State.CURRENT_RECIPE_INDEX;
 import static com.example.android.bakingapp.data.State.CURRENT_STEP_INDEX;
 import static com.example.android.bakingapp.data.State.RECIPE_DATA;
 
+/**
+ * View of a single recipe step, with forward-backward navigation and optional ExoPlayer media.
+ */
 public class DetailFragment extends Fragment {
 
     private ContentValues[] mSteps;
@@ -52,21 +55,37 @@ public class DetailFragment extends Fragment {
     private int mCurrentRecipe;
     private SimpleExoPlayer mExoPlayer;
 
-    @BindView(R.id.tv_step_title) TextView mTitle;
-    @BindView(R.id.tv_step_body) TextView mBody;
-    @BindView(R.id.iv_thumbnail) ImageView mThumbnail;
-    @BindView(R.id.btn_prev_step) Button mBackStep;
-    @BindView(R.id.btn_next_step) Button mNextStep;
-    @BindView(R.id.tv_current_step) TextView mCurrentStepNum;
-    @BindView(R.id.tv_total_steps) TextView mTotalSteps;
-    @BindView(R.id.playerView) SimpleExoPlayerView mPlayerView;
+    @BindView(R.id.tv_step_title)
+    TextView mTitle;
+    @BindView(R.id.tv_step_body)
+    TextView mBody;
+    @BindView(R.id.iv_thumbnail)
+    ImageView mThumbnail;
+    @BindView(R.id.btn_prev_step)
+    Button mBackStep;
+    @BindView(R.id.btn_next_step)
+    Button mNextStep;
+    @BindView(R.id.tv_current_step)
+    TextView mCurrentStepNum;
+    @BindView(R.id.tv_total_steps)
+    TextView mTotalSteps;
+    @BindView(R.id.playerView)
+    SimpleExoPlayerView mPlayerView;
 
     public DetailFragment() {
     }
 
+    /**
+     * Fetch the current recipe step from SharedPreferences, initialize click handlers, draw view.
+     *
+     * @param inflater
+     * @param container
+     * @param savedInstanceState
+     * @return
+     */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        getCurrentRecipeStep();
+        getRecipeStepState();
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
         ButterKnife.bind(this, rootView);
 
@@ -95,74 +114,102 @@ public class DetailFragment extends Fragment {
         return rootView;
     }
 
+    /**
+     * Fetch current recipe step and data from savedInstanceState bundle if exists.
+     *
+     * @param view
+     * @param savedInstanceState
+     */
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (savedInstanceState == null) {
-            getCurrentRecipeStep();
+            getRecipeStepState();
             return;
         }
-        setCurrentStep(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
+        setNewStepState(savedInstanceState.getInt(CURRENT_RECIPE_INDEX), savedInstanceState.getInt(CURRENT_STEP_INDEX));
         mRecipeData = (RecipeData) savedInstanceState.getSerializable(RECIPE_DATA);
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
-
+    /**
+     * Persist state variables and recipe data.
+     *
+     * @param currentState
+     */
     @Override
     public void onSaveInstanceState(Bundle currentState) {
         currentState.putInt(CURRENT_RECIPE_INDEX, mCurrentRecipe);
         currentState.putInt(CURRENT_STEP_INDEX, mCurrentStep);
         currentState.putSerializable(RECIPE_DATA, mRecipeData);
-        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        setRecipeStepState(mCurrentRecipe, mCurrentStep);
         super.onSaveInstanceState(currentState);
     }
 
+    /**
+     * Release Exoplayer when pausing.
+     */
     @Override
     public void onPause() {
         super.onPause();
         releasePlayer();
     }
 
+    /**
+     * Helper function for MainActivity and DetailActivity.
+     *
+     * @param data
+     */
     public void setRecipeData(RecipeData data) {
         mRecipeData = data;
     }
 
-    public void setCurrentStep(int recipe, int step) {
+    /**
+     * Update member variables and SharedPreferences values for current recipe step.
+     *
+     * @param recipe
+     * @param step
+     */
+    public void setNewStepState(int recipe, int step) {
         boolean newRecipe = (recipe != mCurrentRecipe);
         mCurrentRecipe = recipe;
         mCurrentStep = step;
-        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, mCurrentRecipe);
-        State.getInstance().put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+        setRecipeStepState(mCurrentRecipe, mCurrentStep);
         if (newRecipe && mRecipeData != null && mRecipeData.getCount() > 0) {
             refreshSteps();
         }
     }
 
+    /**
+     * Helper function to swap out one recipe's steps ContentValues[] array with another recipe's.
+     */
     public void refreshSteps() {
         mSteps = mRecipeData.getSteps(mCurrentRecipe);
     }
 
+    /**
+     * Validate and update active step ContentValues object based on data and recipe step position.
+     *
+     * @param data
+     * @param recipe
+     * @param step
+     */
     public void setStep(RecipeData data, int recipe, int step) {
         if (data == null) {
-            throw new UnsupportedOperationException("Recipe data is null.");
+            throw new UnsupportedOperationException(getString(R.string.error_recipe_data_null));
         }
         if (data.getCount() < 1) {
             if (data.hasData()) data.reload();
             if (data.getCount() < 1) {
-                throw new UnsupportedOperationException("Cannot set empty recipe data.");
+                throw new UnsupportedOperationException(getString(R.string.error_recipe_data_empty));
             }
         }
         mRecipeData = data;
         if (!Schema.isValidRecipe(recipe)) {
-            throw new UnsupportedOperationException("This version only supports 4 recipes.");
+            throw new UnsupportedOperationException(getString(R.string.error_recipe_out_of_bounds));
         }
         mCurrentRecipe = recipe;
         if (!Schema.isValidStep(step)) {
-            throw new UnsupportedOperationException("This version only supports 100 steps");
+            throw new UnsupportedOperationException(getString(R.string.error_step_out_of_bounds));
         }
         mCurrentStep = step;
         mSteps = data.getSteps(recipe);
@@ -175,35 +222,35 @@ public class DetailFragment extends Fragment {
         mStep = mSteps[mCurrentStep];
     }
 
-    private void showToast(String message) {
-        Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-    }
-
-    public void setCurrentStep(int newValue) {
-        mCurrentStep = newValue;
-        State.getInstance(getContext()).put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
-    }
-
+    /**
+     * Button click callback to navigate backward to previous step.
+     */
     public void navigateBack() {
         if (mCurrentStep == 0) {
-            showToast("First step");
-        } else {
-            setCurrentStep(mCurrentStep - 1);
-            releasePlayer();
-            updateStepView();
+            Toast.makeText(getActivity(), getString(R.string.first_step_toast), Toast.LENGTH_LONG).show();
+            return;
         }
+        setNewStepState(mCurrentStep - 1);
+        releasePlayer();
+        updateStepView();
     }
 
+    /**
+     * Button click callback to navigate forward to next step.
+     */
     public void navigateNext() {
         if ((mCurrentStep + 1) == mSteps.length) {
-            showToast("Last step");
-        } else {
-            setCurrentStep(mCurrentStep + 1);
-            releasePlayer();
-            updateStepView();
+            Toast.makeText(getActivity(), getString(R.string.last_step_toast), Toast.LENGTH_LONG).show();
+            return;
         }
+        setNewStepState(mCurrentStep + 1);
+        releasePlayer();
+        updateStepView();
     }
 
+    /**
+     * Update view objects based on the current step, including ExoPlayer and Picasso.
+     */
     private void updateStepView() {
         if (mStep == null) {
             return;
@@ -213,33 +260,40 @@ public class DetailFragment extends Fragment {
         mTotalSteps.setText(String.valueOf(mSteps.length));
         mTitle.setText(mStep.getAsString(Schema.STEP_TITLE));
         mBody.setText(mStep.getAsString(Schema.STEP_BODY));
+
+        // Handle video with ExoPlayer
         String videoUrl = mStep.getAsString(Schema.STEP_VIDEO_URL);
         if (URLUtil.isValidUrl(videoUrl) && NetworkUtils.isVideoFile(videoUrl)) {
-            //mPlayVideoBtn.setTag(videoUrl);
-            //mPlayVideoBtn.setVisibility(View.VISIBLE);
             mPlayerView.setVisibility(View.VISIBLE);
             initializePlayer(Uri.parse(videoUrl));
         } else {
             mPlayerView.setVisibility(View.GONE);
         }
+
+        // Handle image with Picasso
         String imageUrl = mStep.getAsString(Schema.STEP_IMAGE_URL);
-        if (URLUtil.isValidUrl(imageUrl)) {
-            if (NetworkUtils.isImageFile(imageUrl)) {
-                mThumbnail.setVisibility(View.VISIBLE);
-                Picasso.with(mContext)
-                        .load(imageUrl)
-                        .placeholder(R.drawable.ic_photo_size_select_actual_black_24dp)
-                        .into(mThumbnail);
-            } else {
-                Log.w("BakingApp", "Found non-image file in thumbnail field: " + imageUrl);
-            }
-        } else {
+        if (!URLUtil.isValidUrl(imageUrl)) {
             mThumbnail.setVisibility(View.GONE);
+            return;
         }
+
+        if (!NetworkUtils.isImageFile(imageUrl)) {
+            Log.w("BakingApp", "Found non-image file in thumbnail field: " + imageUrl);
+            return;
+        }
+
+        mThumbnail.setVisibility(View.VISIBLE);
+        int placeholder = R.drawable.ic_photo_size_select_actual_black_24dp;
+        Picasso.with(mContext).load(imageUrl).placeholder(placeholder).into(mThumbnail);
     }
 
+    /**
+     * Helper function to set up ExoPlayer with validated video URI.
+     *
+     * @param videoUri
+     */
     public void initializePlayer(Uri videoUri) {
-        if (isPlaying()) {
+        if (getPlayingState()) {
             releasePlayer();
         }
         if (mExoPlayer == null) {
@@ -248,7 +302,7 @@ public class DetailFragment extends Fragment {
             mExoPlayer = ExoPlayerFactory.newSimpleInstance(getContext(), trackSelector, loadControl);
             mPlayerView.setPlayer(mExoPlayer);
         }
-        String userAgent = Util.getUserAgent(getContext(), "BakingApp");
+        String userAgent = Util.getUserAgent(getContext(), getString(R.string.app_label));
         MediaSource mediaSource = new ExtractorMediaSource(videoUri,
                 new DefaultDataSourceFactory(getContext(), userAgent),
                 new DefaultExtractorsFactory(),
@@ -257,18 +311,14 @@ public class DetailFragment extends Fragment {
         );
         mExoPlayer.prepare(mediaSource);
         mExoPlayer.setPlayWhenReady(true);
-        setPlayerState(true);
-    }
-
-    boolean isPlaying() {
-        return State.getInstance(getContext()).getBoolean(State.Key.IS_PLAYING);
+        setPlayingState(true);
     }
 
     /**
      * Release ExoPlayer.
      */
     public void releasePlayer() {
-        setPlayerState(false);
+        setPlayingState(false);
         if (mExoPlayer == null) {
             return;
         }
@@ -277,16 +327,53 @@ public class DetailFragment extends Fragment {
         mExoPlayer = null;
     }
 
-    private void setPlayerState(boolean newValue) {
+    /**
+     * Helper function returns whether ExoPlayer is currently playing from SharedPreferences.
+     *
+     * @return
+     */
+    boolean getPlayingState() {
+        return State.getInstance(getContext()).getBoolean(State.Key.IS_PLAYING);
+    }
+
+    /**
+     * Helper function to update whether ExoPlayer is currently playing to SharedPreferences.
+     *
+     * @param newValue
+     */
+    private void setPlayingState(boolean newValue) {
         State.getInstance().put(State.Key.IS_PLAYING, newValue);
     }
 
-    private void getCurrentRecipeStep() {
+    /**
+     * Helper function for updating which step of the current recipe to SharedPreferences.
+     *
+     * @param newStep
+     */
+    public void setNewStepState(int newStep) {
+        mCurrentStep = newStep;
+        State.getInstance(getContext()).put(State.Key.ACTIVE_STEP_INT, mCurrentStep);
+    }
+
+    /**
+     * Helper function to update both the recipe and step currently displayed to SharedPreferences.
+     *
+     * @param recipe
+     * @param step
+     */
+    private void setRecipeStepState(int recipe, int step) {
+        State.getInstance(getContext()).put(State.Key.ACTIVE_RECIPE_INT, recipe);
+        State.getInstance().put(State.Key.ACTIVE_STEP_INT, step);
+    }
+
+    /**
+     * Helper function to load current recipe step from SharedPreferences into member variables.
+     */
+    private void getRecipeStepState() {
         try {
             mCurrentRecipe = State.getInstance(getContext()).getInt(State.Key.ACTIVE_RECIPE_INT);
             mCurrentStep = State.getInstance().getInt(State.Key.ACTIVE_STEP_INT);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

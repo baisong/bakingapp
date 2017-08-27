@@ -133,7 +133,7 @@ public class DetailActivity extends AppCompatActivity {
     private void addDetailFragment() {
         DetailFragment fragment = new DetailFragment();
         fragment.setRecipeData(mRecipeData);
-        fragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
+        fragment.setNewStepState(mCurrentRecipe, mCurrentStep);
         fragment.refreshSteps();
 
         FragmentManager fragmentManager = getSupportFragmentManager();

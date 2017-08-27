@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Baking App</string>
+    <string name="app_label">BakingApp</string>
     <string name="ingredients_label">Ingredients</string>
     <string name="steps_label">Steps</string>
     <string name="action_next_step">Next</string>
@@ -17,4 +18,11 @@
     <string name="appwidget_ingredient_count_null">Loading...</string>
     <string name="error_message">Error</string>
     <string name="could_not_load_main_frag">Unable to load Main Fragment.</string>
+    <string name="first_step_toast">First step</string>
+    <string name="last_step_toast">Last step</string>
+    <string name="error_recipe_data_null">Recipe data is null.</string>
+    <string name="error_recipe_data_empty">Cannot set empty recipe data.</string>
+    <string name="error_recipe_out_of_bounds">This version only supports 4 recipes.</string>
+    <string name="error_step_out_of_bounds">This version only supports 100 steps.</string>
+    <string name="ingredient_suffix">ingredients</string>
 </resources>

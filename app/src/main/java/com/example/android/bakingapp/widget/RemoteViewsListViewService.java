@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
@@ -16,34 +15,29 @@ import com.example.android.bakingapp.data.Schema;
 
 import butterknife.BindView;
 
+/**
+ *
+ *
+ * About Widget ListViews: https://developer.android.com/reference/android/widget/ListView.html
+ */
 public class RemoteViewsListViewService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
-        logFunc("onGetViewFactory", intent);
         Bundle extras = intent.getExtras();
         int recipeId = extras.getInt(Schema.RECIPE_ID, -1);
         if (!Schema.isValidRecipe(recipeId)) {
-            log("1. NULL");
             return null;
         }
-        logFunc("onGetViewFactory: recipeId = " + String.valueOf(recipeId));
 
-
-        // RecipeData data = (RecipeData) extras.getSerializable(State.RECIPE_DATA);
         String data = extras.getString(Schema.INGREDIENTS_EXTRA_KEY);
         if (data == null) {
-            log("2. NULL");
             return null;
         }
-        logFunc("onGetViewFactory: data = " + data);
         String[] ingredientStrings = TextUtils.split(data, Schema.INGREDIENTS_EXTRA_SEPARATOR);
         if (ingredientStrings.length < 1) {
-            log("3. NULL");
             return null;
         }
-        logFunc("onGetViewFactory: ingredients = " + TextUtils.join(", ", ingredientStrings));
 
-        //logFunc("onGetViewFactory", recipeId, data.getCount());
         int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
         mAppWidgetId = extras.getInt(
                     AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
@@ -67,7 +61,6 @@ public class RemoteViewsListViewService extends RemoteViewsService {
 
         public ListRemoteViewsFactory(Context context, String[] ingredientStrings, int recipeId) {
             super();
-            //logFunc("ListRemoteViewsFactory", context, ingredientStrings, recipeId);
             mContext = context;
             mIngredientStrings = ingredientStrings;
             mRecipeId = recipeId;
@@ -102,14 +95,9 @@ public class RemoteViewsListViewService extends RemoteViewsService {
 
         @Override
         public RemoteViews getViewAt(int position) {
-            logFunc("getViewAt",position, mContext, mRecipeId, mIngredientStrings[position]);
             // @TODO Write this list adapter for the widget
             //LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.item_shopping_list, null);
             RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.item_shopping_list);
-            //ButterKnife.bind(this, views);
-            //TextView recipeName = (TextView) rootView.findViewById(R.id.tv_recipe_name);
-            //ImageView recipePic = (ImageView) rootView.findViewById(R.id.iv_recipe_pic);
-
             String ingredient = mIngredientStrings[position];
             views.setTextViewText(R.id.tv_ingredient_name, ingredient);
             views.setTextViewText(R.id.tv_ingredient_num, String.valueOf(position + 1) + ".");
@@ -132,21 +120,5 @@ public class RemoteViewsListViewService extends RemoteViewsService {
             return false;
         }
 
-    }
-
-    private final static String LOG_TAG = "BakingApp [WID]{serv}";
-    private void log(String message) {
-        Log.d(LOG_TAG, message);
-    }
-    private void logFunc(String functionName, Object... args) {
-        String message = functionName + "(";
-        for (int i = 0; i < args.length; i++) {
-            boolean isLast = (i == (args.length - 1));
-            boolean isFirst = (i == 0);
-            if (!isFirst) message += ", ";
-            message += String.valueOf(args[i]);
-            if (isLast) message += ")";
-        }
-        log(message);
     }
 }

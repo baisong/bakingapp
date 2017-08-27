@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             return;
         }
         mDetailFragment.setRecipeData(mRecipeData);
-        mDetailFragment.setCurrentStep(mCurrentRecipe, mCurrentStep);
+        mDetailFragment.setNewStepState(mCurrentRecipe, mCurrentStep);
     }
 
     /**
@@ -252,7 +252,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         if (mTwoPane) {
             DetailFragment newFragment = new DetailFragment();
             newFragment.setRecipeData(mRecipeData);
-            newFragment.setCurrentStep(recipe, step);
+            newFragment.setNewStepState(recipe, step);
             newFragment.refreshSteps();
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.detail_fragment_container, newFragment)
