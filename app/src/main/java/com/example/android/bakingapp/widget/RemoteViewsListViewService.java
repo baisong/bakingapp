@@ -1,11 +1,9 @@
 package com.example.android.bakingapp.widget;
 
-import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
 import android.widget.RemoteViews;
 import android.widget.RemoteViewsService;
 import android.widget.TextView;
@@ -13,22 +11,13 @@ import android.widget.TextView;
 import com.example.android.bakingapp.R;
 import com.example.android.bakingapp.data.Schema;
 
-import butterknife.BindView;
-
 /**
- *
- *
  * About Widget ListViews: https://developer.android.com/reference/android/widget/ListView.html
  */
 public class RemoteViewsListViewService extends RemoteViewsService {
     @Override
     public RemoteViewsFactory onGetViewFactory(Intent intent) {
         Bundle extras = intent.getExtras();
-        int recipeId = extras.getInt(Schema.RECIPE_ID, -1);
-        if (!Schema.isValidRecipe(recipeId)) {
-            return null;
-        }
-
         String data = extras.getString(Schema.INGREDIENTS_EXTRA_KEY);
         if (data == null) {
             return null;
@@ -38,33 +27,21 @@ public class RemoteViewsListViewService extends RemoteViewsService {
             return null;
         }
 
-        int mAppWidgetId = AppWidgetManager.INVALID_APPWIDGET_ID;
-        mAppWidgetId = extras.getInt(
-                    AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
-        return new ListRemoteViewsFactory(getApplicationContext(), ingredientStrings, recipeId);
+        return new ListRemoteViewsFactory(getApplicationContext(), ingredientStrings);
     }
 
     class ListRemoteViewsFactory implements RemoteViewsFactory {
 
         private Context mContext;
         private String[] mIngredientStrings;
-        private LayoutInflater mInflater;
-        private int mRecipeId;
-
-        @BindView(R.id.tv_ingredient_name)
         TextView mName;
-        @BindView(R.id.tv_quantity)
         TextView mQuantity;
-        @BindView(R.id.tv_measure)
         TextView mMeasure;
 
-
-        public ListRemoteViewsFactory(Context context, String[] ingredientStrings, int recipeId) {
+        public ListRemoteViewsFactory(Context context, String[] ingredientStrings) {
             super();
             mContext = context;
             mIngredientStrings = ingredientStrings;
-            mRecipeId = recipeId;
-            mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @Override
@@ -95,8 +72,6 @@ public class RemoteViewsListViewService extends RemoteViewsService {
 
         @Override
         public RemoteViews getViewAt(int position) {
-            // @TODO Write this list adapter for the widget
-            //LinearLayout rootView = (LinearLayout) mInflater.inflate(R.layout.item_shopping_list, null);
             RemoteViews views = new RemoteViews(mContext.getPackageName(), R.layout.item_shopping_list);
             String ingredient = mIngredientStrings[position];
             views.setTextViewText(R.id.tv_ingredient_name, ingredient);
