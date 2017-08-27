@@ -26,17 +26,22 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
             <ImageView
                 android:id="@+id/iv_recipe_pic"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="0dp"
-                android:layout_marginRight="0dp"
-                android:layout_marginStart="0dp"
-                android:layout_marginTop="0dp"
+                android:layout_height="300dp"
                 android:adjustViewBounds="true"
                 android:scaleType="fitXY"
                 android:src="@drawable/ic_photo_size_select_actual_black_24dp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:layout_width="0dp"
+                android:layout_height="80dp"
+                android:src="@drawable/black_vertical_gradient"
+                android:scaleType="fitXY"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/iv_recipe_pic" />
 
             <TextView
                 android:id="@+id/tv_recipe_name"
@@ -48,8 +53,8 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
                 android:textColor="@color/colorPrimaryInverse"
                 app:layout_constraintBottom_toBottomOf="@+id/iv_recipe_pic"
                 app:layout_constraintLeft_toLeftOf="@+id/iv_recipe_pic"
-                tools:layout_editor_absoluteX="8dp"
-                tools:text="Recipe Name"></TextView>
+                tools:text="Recipe Name"
+                android:layout_marginStart="8dp"/>
         </android.support.constraint.ConstraintLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -61,6 +66,8 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/detail_list_margin_bottom"
             android:layout_marginTop="@dimen/detail_list_margin_top"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
             tools:text="Ingredients" />
         <android.support.v7.widget.RecyclerView
@@ -73,6 +80,8 @@ or else takes up a lefthand sidebar on a wider, horizontal viewport.
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/detail_list_margin_top"
+            android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:textAppearance="?android:attr/textAppearanceSearchResultSubtitle"
             tools:text="Steps" />
         <android.support.v7.widget.RecyclerView

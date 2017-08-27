@@ -31,7 +31,8 @@
         android:id="@+id/btn_video_icon"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="24dp"
+        android:layout_marginTop="6dp"
         android:layout_gravity="center"
         android:gravity="center"
         android:paddingLeft="8dip"
@@ -39,34 +40,4 @@
         android:drawableStart="@drawable/ic_play_circle_outline_black_24dp"
         android:drawableLeft="@drawable/ic_play_circle_outline_black_24dp"
         android:drawablePadding="0dp"/>
-    <!--
-    <TextView
-        android:id="@+id/tv_step_body"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="0dp"
-        tools:text="1. First, take out the laundry and stuff."
-        android:layout_marginBottom="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:layout_marginTop="@dimen/detail_list_item_top"
-        android:layout_marginStart="@dimen/detail_list_item_top"
-        android:layout_marginLeft="@dimen/detail_list_item_horizontal"/>
-
-    <ImageView
-        android:id="@+id/iv_thumbnail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone"
-        android:adjustViewBounds="true"
-        android:scaleType="fitXY"
-        tools:text="First, take out the laundry."
-        android:layout_marginBottom="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        android:src="@drawable/ic_photo_size_select_actual_black_24dp"
-        android:layout_marginTop="@dimen/detail_list_item_top"
-        android:layout_marginStart="@dimen/detail_list_item_top"
-        android:layout_marginLeft="@dimen/detail_list_item_horizontal"/>
-        -->
 </LinearLayout>

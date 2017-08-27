@@ -1,7 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-
--->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -9,24 +6,15 @@
     android:baselineAligned="false"
     android:orientation="horizontal"
     tools:context="com.example.android.bakingapp.activities.MainActivity">
-    <!--
-
--->
     <fragment
         android:id="@+id/main_list_fragment"
         android:name="com.example.android.bakingapp.fragments.MainFragment"
         android:layout_width="400dp"
         android:layout_height="match_parent" />
-    <!--
-
--->
     <View
         android:layout_width="1dp"
         android:layout_height="match_parent"
         android:background="@android:color/darker_gray" />
-    <!--
-
--->
     <LinearLayout
         android:id="@+id/ll_recipe_wrapper"
         android:layout_width="wrap_content"
@@ -38,9 +26,6 @@
         android:paddingLeft="@dimen/activity_horizontal_margin"
         android:paddingRight="@dimen/activity_horizontal_margin"
         android:paddingTop="@dimen/activity_vertical_margin">
-        <!--
-
--->
         <FrameLayout
             android:id="@+id/detail_fragment_container"
             android:layout_width="match_parent"
