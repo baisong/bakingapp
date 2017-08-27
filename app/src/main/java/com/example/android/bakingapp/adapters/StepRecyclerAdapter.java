@@ -84,7 +84,7 @@ public class StepRecyclerAdapter extends RecyclerView.Adapter<StepRecyclerAdapte
         if (URLUtil.isValidUrl(videoUrl) && NetworkUtils.isVideoFile(videoUrl)) {
             holder.mVideoIcon.setVisibility(View.VISIBLE);
         } else {
-            holder.mVideoIcon.setVisibility(View.GONE);
+            holder.mVideoIcon.setVisibility(View.INVISIBLE);
         }
         holder.mName.setText(step.getAsString(Schema.STEP_TITLE));
         holder.mListNum.setText(String.valueOf(position + 1));
