@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -75,7 +74,6 @@ public class WidgetConfigureActivity extends Activity {
     static void saveRecipeIdPref(Context context, int appWidgetId, int recipeId) {
         SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
         prefs.putInt(PREF_PREFIX_KEY + appWidgetId, recipeId);
-        Log.d("BakingApp", "Widget save " + String.valueOf(appWidgetId) + ": " + String.valueOf(recipeId));
         prefs.apply();
     }
 
@@ -88,9 +86,7 @@ public class WidgetConfigureActivity extends Activity {
      */
     public static int loadRecipePref(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        int recipeId = prefs.getInt(PREF_PREFIX_KEY + appWidgetId, DEFAULT_NO_SELECTION);
-        Log.d("BakingApp", "Widget save " + String.valueOf(appWidgetId) + ": " + String.valueOf(recipeId));
-        return recipeId;
+        return prefs.getInt(PREF_PREFIX_KEY + appWidgetId, DEFAULT_NO_SELECTION);
     }
 
     /**
