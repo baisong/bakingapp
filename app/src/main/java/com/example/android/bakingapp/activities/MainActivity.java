@@ -248,6 +248,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
      * @param step
      */
     public void onStepSelected(int recipe, int step) {
+        setCurrentRecipeStep(recipe, step);
         if (mTwoPane) {
             int container = R.id.detail_fragment_container;
             DetailFragment f = DetailFragment.newInstance(mRecipeData, recipe, step);
