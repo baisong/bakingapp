@@ -76,6 +76,21 @@ public class DetailFragment extends Fragment {
     }
 
     /**
+     * Static factory method to set up a new instance.
+     *
+     *
+     * @param data
+     * @param recipe
+     * @param step
+     * @return
+     */
+    public static DetailFragment newInstance(RecipeData data, int recipe, int step) {
+        DetailFragment f = new DetailFragment();
+        f.setStep(data, recipe, step);
+        return f;
+    }
+
+    /**
      * Fetch the current recipe step from SharedPreferences, initialize click handlers, draw view.
      *
      * @param inflater
@@ -102,6 +117,7 @@ public class DetailFragment extends Fragment {
                 navigateNext();
             }
         });
+
         try {
             setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
         } catch (UnsupportedOperationException e) {
@@ -175,15 +191,8 @@ public class DetailFragment extends Fragment {
         mCurrentStep = step;
         setRecipeStepState(mCurrentRecipe, mCurrentStep);
         if (newRecipe && mRecipeData != null && mRecipeData.getCount() > 0) {
-            refreshSteps();
+            mSteps = mRecipeData.getSteps(mCurrentRecipe);
         }
-    }
-
-    /**
-     * Helper function to swap out one recipe's steps ContentValues[] array with another recipe's.
-     */
-    public void refreshSteps() {
-        mSteps = mRecipeData.getSteps(mCurrentRecipe);
     }
 
     /**
@@ -277,13 +286,16 @@ public class DetailFragment extends Fragment {
             return;
         }
 
+        // Display a placeholder for broken images or unloadable images.
+        int placeholder = R.drawable.ic_photo_size_select_actual_black_24dp;
+        mThumbnail.setVisibility(View.VISIBLE);
         if (!NetworkUtils.isImageFile(imageUrl)) {
             Log.w("BakingApp", "Found non-image file in thumbnail field: " + imageUrl);
+            mThumbnail.setImageResource(placeholder);
             return;
         }
 
-        mThumbnail.setVisibility(View.VISIBLE);
-        int placeholder = R.drawable.ic_photo_size_select_actual_black_24dp;
+        // Load the thumbnail image from the JSON property with the placeholder as a loading image.
         Picasso.with(mContext).load(imageUrl).placeholder(placeholder).into(mThumbnail);
     }
 

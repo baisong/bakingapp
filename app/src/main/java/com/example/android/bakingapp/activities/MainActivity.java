@@ -205,8 +205,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
      */
     public void addDetailFragment() {
         getCurrentRecipeStep();
-        mDetailFragment = new DetailFragment();
-        mDetailFragment.setStep(mRecipeData, mCurrentRecipe, mCurrentStep);
+        mDetailFragment = DetailFragment.newInstance(mRecipeData, mCurrentRecipe, mCurrentStep);
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.detail_fragment_container, mDetailFragment, DETAIL_FRAGMENT_TAG)
                 .commit();
@@ -250,13 +249,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
      */
     public void onStepSelected(int recipe, int step) {
         if (mTwoPane) {
-            DetailFragment newFragment = new DetailFragment();
-            newFragment.setRecipeData(mRecipeData);
-            newFragment.setNewStepState(recipe, step);
-            newFragment.refreshSteps();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.detail_fragment_container, newFragment)
-                    .commit();
+            int container = R.id.detail_fragment_container;
+            DetailFragment f = DetailFragment.newInstance(mRecipeData, recipe, step);
+            getSupportFragmentManager().beginTransaction().replace(container, f).commit();
         } else {
             final Intent intent = new Intent(this, DetailActivity.class);
             intent.putExtra(State.CURRENT_RECIPE_INDEX, recipe);

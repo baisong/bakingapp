@@ -2,7 +2,6 @@ package com.example.android.bakingapp.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -131,15 +130,9 @@ public class DetailActivity extends AppCompatActivity {
      * Replace the detail fragment with up-to-date recipe data.
      */
     private void addDetailFragment() {
-        DetailFragment fragment = new DetailFragment();
-        fragment.setRecipeData(mRecipeData);
-        fragment.setNewStepState(mCurrentRecipe, mCurrentStep);
-        fragment.refreshSteps();
-
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.detail_fragment_container, fragment)
-                .commit();
+        int container = R.id.detail_fragment_container;
+        DetailFragment f = DetailFragment.newInstance(mRecipeData, mCurrentRecipe, mCurrentStep);
+        getSupportFragmentManager().beginTransaction().replace(container, f).commit();
     }
 
 }
