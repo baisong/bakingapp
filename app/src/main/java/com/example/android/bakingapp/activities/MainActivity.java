@@ -18,8 +18,6 @@ import com.example.android.bakingapp.fragments.DetailFragment;
 import com.example.android.bakingapp.fragments.MainFragment;
 import com.example.android.bakingapp.tools.NetworkUtils;
 
-import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -59,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             State.getInstance(getApplicationContext()).put(State.Key.IS_PLAYING, false);
             State.getInstance().put(State.Key.ACTIVE_RECIPE_INT, 0);
             State.getInstance().put(State.Key.ACTIVE_STEP_INT, 0);
+            launchSelectRecipeActivity();
         }
         // Otherwise, restore from SharedPreferences if available.
         else {
@@ -129,14 +128,15 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         menu.clear();
         // Load disabled label for overflow options menu.
         getMenuInflater().inflate(R.menu.main, menu);
-        menu.findItem(R.id.action_options_menu).setEnabled(false);
         // Load data into menu for navigation between recipes.
+        /*
         if (dataLoaded()) {
             List<String> names = mRecipeData.getRecipeNames();
             for (int i = 0; i < names.size(); i++) {
                 menu.add(0, i, Menu.NONE, names.get(i));
             }
         }
+        */
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -150,6 +150,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             setCurrentRecipeStep(id);
             updateMainAndDetailFragments();
             return true;
+        }
+        if (id == R.id.action_options_menu) {
+            launchSelectRecipeActivity();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -318,5 +321,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             invalidateOptionsMenu();
             updateMainAndDetailFragments();
         }
+    }
+
+
+    private void launchSelectRecipeActivity() {
+        final Intent intent = new Intent(this, SelectRecipeActivity.class);
+        if (dataLoaded()) {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable(State.RECIPE_DATA, mRecipeData);
+            intent.putExtras(bundle);
+        }
+        startActivity(intent);
     }
 }

@@ -78,6 +78,7 @@ public class DetailFragment extends Fragment {
     /**
      * Static factory method to set up a new instance.
      *
+     * More: http://www.androiddesignpatterns.com/2012/05/using-newinstance-to-instantiate.html
      *
      * @param data
      * @param recipe

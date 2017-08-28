@@ -15,12 +15,13 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
-import static android.support.test.espresso.Espresso.openActionBarOverflowOrOptionsMenu;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.anything;
 
 /**
  * Created by oren on 8/26/17.
@@ -33,20 +34,11 @@ public class MainDetailNavigationTest {
     public UiDevice mDevice;
     public UiScrollable mScrollable;
 
-    @Test
-    public void rotateMainActivity_detailFragmentDisplaysFirstStep() {
-        setupUiObjects();
-        rotateLeft();
-        onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
-        rotateNatural();
-    }
-
     public void rotateLeft() {
         try {
             mDevice.setOrientationLeft();
             SystemClock.sleep(500);
-        }
-        catch (RemoteException e) {
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
@@ -55,8 +47,7 @@ public class MainDetailNavigationTest {
         try {
             mDevice.setOrientationNatural();
             SystemClock.sleep(500);
-        }
-        catch (RemoteException e) {
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
@@ -65,6 +56,7 @@ public class MainDetailNavigationTest {
     public void rotateDetailActivity_preservesCurrentRecipeStep() {
         setupUiObjects();
         rotateNatural();
+        onData(anything()).inAdapterView(withId(R.id.gv_select_recipe)).atPosition(0).perform(click());
         try {
             mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -84,11 +76,9 @@ public class MainDetailNavigationTest {
 
     @Test
     public void navigateViaToolbarAndButtons_rotatePreservesCurrentRecipeStep() {
-        openActionBarOverflowOrOptionsMenu(getInstrumentation().getTargetContext());
         setupUiObjects();
-        SystemClock.sleep(500);
-        onView(withText("Cheesecake")).perform(click());
-        SystemClock.sleep(500);
+        rotateNatural();
+        onData(anything()).inAdapterView(withId(R.id.gv_select_recipe)).atPosition(3).perform(click());
         try {
             mScrollable.scrollForward();
             mScrollable.scrollForward();
@@ -103,7 +93,6 @@ public class MainDetailNavigationTest {
             e.printStackTrace();
         }
     }
-
 
     /**
      * Utility setup function to allow scrolling on NestedScrollView views.

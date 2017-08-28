@@ -18,6 +18,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.support.test.InstrumentationRegistry.getInstrumentation;
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
@@ -45,6 +46,7 @@ public class MainActivityBasicTest {
     public void clickOnStep_launchesStepActivity() {
         setupUiObjects();
         rotateNatural();
+        onData(anything()).inAdapterView(withId(R.id.gv_select_recipe)).atPosition(0).perform(click());
         try {
             mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -62,6 +64,7 @@ public class MainActivityBasicTest {
     public void clickOnNextButton_launchesNextStep() {
         setupUiObjects();
         rotateNatural();
+        onData(anything()).inAdapterView(withId(R.id.gv_select_recipe)).atPosition(0).perform(click());
         try {
             mScrollable.scrollForward();
             onView(withId(R.id.rv_steps)).perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
@@ -81,6 +84,7 @@ public class MainActivityBasicTest {
     public void rotateMainActivity_detailFragmentDisplaysFirstStep() {
         setupUiObjects();
         rotateNatural();
+        onData(anything()).inAdapterView(withId(R.id.gv_select_recipe)).atPosition(0).perform(click());
         rotateLeft();
         onView(withId(R.id.tv_current_step)).check(matches(withText("1")));
     }
@@ -98,16 +102,6 @@ public class MainActivityBasicTest {
      * Utility setup function to allow scrolling on NestedScrollView views.
      *
      * @return
-     *
-    public UiScrollable setupNestedScrollViewScrolling() {
-        UiDevice.getInstance(getInstrumentation());
-        return new UiScrollable(new UiSelector().scrollable(true));
-    }*/
-
-    /**
-     * Utility setup function to allow scrolling on NestedScrollView views.
-     *
-     * @return
      */
     public void setupUiObjects() {
         mDevice = UiDevice.getInstance(getInstrumentation());
@@ -118,8 +112,7 @@ public class MainActivityBasicTest {
         try {
             mDevice.setOrientationNatural();
             SystemClock.sleep(500);
-        }
-        catch (RemoteException e) {
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }
@@ -128,8 +121,7 @@ public class MainActivityBasicTest {
         try {
             mDevice.setOrientationLeft();
             SystemClock.sleep(500);
-        }
-        catch (RemoteException e) {
+        } catch (RemoteException e) {
             e.printStackTrace();
         }
     }

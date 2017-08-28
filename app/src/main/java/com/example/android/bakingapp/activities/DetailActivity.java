@@ -39,7 +39,7 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         launchMainIfWidescreen();
-        setContentView(R.layout.activity_recipe);
+        setContentView(R.layout.activity_detail);
         if (savedInstanceState == null) {
             loadDataFromExplicitIntent();
         } else {
