@@ -25,4 +25,5 @@
     <string name="error_recipe_out_of_bounds">This version only supports 4 recipes.</string>
     <string name="error_step_out_of_bounds">This version only supports 100 steps.</string>
     <string name="ingredient_suffix">ingredients</string>
+    <string name="action_choose_recipe">Recipes</string>
 </resources>

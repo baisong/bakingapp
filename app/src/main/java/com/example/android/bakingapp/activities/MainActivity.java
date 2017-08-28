@@ -31,7 +31,6 @@ import butterknife.ButterKnife;
 public class MainActivity extends AppCompatActivity implements MainFragment.OnStepClickListener {
 
     private boolean mTwoPane;
-    private MainFragment mMainFragment;
     private DetailFragment mDetailFragment;
     private RecipeData mRecipeData;
     private int mCurrentRecipe;
@@ -128,7 +127,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         menu.clear();
-        if (mRecipeData != null && mRecipeData.getCount() > 0) {
+        // Load disabled label for overflow options menu.
+        getMenuInflater().inflate(R.menu.main, menu);
+        menu.findItem(R.id.action_options_menu).setEnabled(false);
+        // Load data into menu for navigation between recipes.
+        if (dataLoaded()) {
             List<String> names = mRecipeData.getRecipeNames();
             for (int i = 0; i < names.size(); i++) {
                 menu.add(0, i, Menu.NONE, names.get(i));
@@ -143,14 +146,11 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id >= 0 && id < 4) {
             setCurrentRecipeStep(id);
-            //addMainFragment();
             updateMainAndDetailFragments();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -190,10 +190,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
             return;
         }
         getCurrentRecipeStep();
-        mMainFragment = (MainFragment) f;
-        mMainFragment.setRecipeData(mRecipeData);
-        mMainFragment.setCurrentRecipe(mCurrentRecipe);
-        mMainFragment.loadCurrentRecipe();
+        MainFragment mainFragment = (MainFragment) f;
+        mainFragment.setRecipeData(mRecipeData);
+        mainFragment.setCurrentRecipe(mCurrentRecipe);
+        mainFragment.loadCurrentRecipe();
 
         if (mTwoPane) {
             addDetailFragment();
