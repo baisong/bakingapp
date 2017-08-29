@@ -14,6 +14,10 @@ import static com.example.android.bakingapp.data.Schema.RECIPE_NAME;
 
 /**
  * Stores values converted from JSON into ContentValue[] arrays with get/set and helper functions.
+ *
+ * @TODO Good job in implementing Serializable.
+ * However, on Android, it is advisable to implement Parcelable which gives better performance.
+ * http://www.developerphil.com/parcelable-vs-serializable/
  */
 public class RecipeData implements Serializable {
     private String mRawJson;
@@ -106,6 +110,10 @@ public class RecipeData implements Serializable {
 
     /**
      * Parse and assign recipe data to member variables.
+     *
+     * @TODO Here, you can use the following libraries to easily convert json string to an object:
+     * https://github.com/google/gson
+     * https://github.com/FasterXML/jackson
      *
      * @param json
      */

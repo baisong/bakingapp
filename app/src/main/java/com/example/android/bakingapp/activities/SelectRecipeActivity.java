@@ -39,7 +39,11 @@ public class SelectRecipeActivity extends AppCompatActivity {
     private SelectRecipeAdapter mAdapter;
 
     /**
-     * Provide
+     * @TODO As per Nanodegree Guidelines link, it is required that you restore the position of the
+     * recycler view post screen rotation. For Recyclerview position restoration, you can refer:
+     * https://stackoverflow.com/questions/27816217/how-to-save-recyclerviews-scroll-position-using-recyclerview-state
+     * http://panavtec.me/retain-restore-recycler-view-scroll-position
+     * https://medium.com/@dimezis/android-scroll-position-restoring-done-right-cff1e2104ac7
      *
      * @param savedInstanceState
      */

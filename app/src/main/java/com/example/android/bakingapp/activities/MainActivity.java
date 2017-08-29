@@ -74,6 +74,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         }
 
         // Detect two pane and release ExoPlayer if detail exists to prevent duplicate session.
+        // @TODO Have a look at this for more info on detecting a tablet.
+        // https://stackoverflow.com/questions/9279111/determine-if-the-device-is-a-smartphone-or-tablet
         mTwoPane = (findViewById(R.id.ll_recipe_wrapper) != null);
         if (mTwoPane && (mDetailFragment != null)) mDetailFragment.releasePlayer();
 
@@ -81,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSt
         if (dataLoaded()) {
             updateMainAndDetailFragments();
         } else {
+            // @TODO You should first check if the network is available then make the network call.
+            // You can check this link to check for network connectivity.
+            // http://www.androidhive.info/2012/07/android-detect-internet-connection-status/
             new FetchRecipesTask().execute();
         }
     }

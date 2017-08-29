@@ -14,6 +14,11 @@ import java.util.Scanner;
 
 /**
  * Communicate with the recipe resources on remote server, and provide other HTTP/Web utilities.
+ *
+ * @TODO This class will never be instantiated, so you can suppress the constructor.
+ * private NetworkUtils() {}
+ * Related: https://stackoverflow.com/questions/25658330/why-java-util-objects-private-constructor-throws-assertionerror
+ * https://knowledgearray.net/index.php/2017/06/09/assertionerror-in-private-constructors/
  */
 public final class NetworkUtils {
 
@@ -89,6 +94,10 @@ public final class NetworkUtils {
 
     /**
      * General purpose function to read the body of an HTTP response.
+     *
+     * @TODO You can also look at Libraries like Volley or Retrofit.
+     * https://futurestud.io/tutorials/tag/retrofit
+     * https://developer.android.com/training/volley/index.html
      *
      * @param url
      * @return

@@ -72,6 +72,11 @@ public class DetailFragment extends Fragment {
     @BindView(R.id.playerView)
     SimpleExoPlayerView mPlayerView;
 
+    /**
+     * @TODO See code formatting standards:
+     * https://google.github.io/styleguide/javaguide.html
+     * https://source.android.com/source/code-style
+     */
     public DetailFragment() {
     }
 
@@ -164,6 +169,13 @@ public class DetailFragment extends Fragment {
 
     /**
      * Release Exoplayer when pausing.
+     *
+     * @TODO When the app resumes from the background while the video is being played. The video
+     * screen freezes. You need to restore the video playback.
+     * Have a look at demo, more precisely this file to handle Exoplayer properly.
+     * https://github.com/google/ExoPlayer/tree/release-v2/demo
+     * https://github.com/google/ExoPlayer/blob/release-v2/demo/src/main/java/com/google/android/exoplayer2/demo/PlayerActivity.java
+     *
      */
     @Override
     public void onPause() {
@@ -237,6 +249,8 @@ public class DetailFragment extends Fragment {
      */
     public void navigateBack() {
         if (mCurrentStep == 0) {
+            // @TODO Snackbar is better.
+            // http://www.androidhive.info/2015/09/android-material-design-snackbar-example/
             Toast.makeText(getActivity(), getString(R.string.first_step_toast), Toast.LENGTH_LONG).show();
             return;
         }

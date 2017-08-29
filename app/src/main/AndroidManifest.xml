@@ -18,6 +18,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--
+        @TODO When the up navigation button is clicked it recreates the parent activity which ideally should resume it.
+        https://stackoverflow.com/questions/15559838/actionbar-up-navigation-recreates-parent-activity-instead-of-onresume
+        -->
         <activity
             android:name=".activities.DetailActivity"
             android:parentActivityName=".activities.MainActivity">

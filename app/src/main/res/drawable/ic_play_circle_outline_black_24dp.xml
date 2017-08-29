@@ -1,3 +1,7 @@
+<!--
+@TODO Have a look at this to use font icons on Android which scale without any noise.
+https://github.com/mikepenz/Android-Iconics
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
         android:width="24dp"
         android:height="24dp"
